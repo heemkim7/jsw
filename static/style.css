@@ -1,0 +1,38 @@
+.comment {
+    border-top:dotted 1px #ddd;
+    font-size:0.7em;
+}
+
+
+tr.subtitle_back{
+    font-size: 14px;
+	/*background-image: url('/static/img/bg_subtitle.png');*/
+	background-size: 100% 100%;
+}
+
+td.subtitle_num{
+    text-align: left;
+    font-size: 15px;
+    font-weight: bold;
+    color: black;
+}
+
+#backToTop {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  font-size: 15px;
+  border: none;
+  outline: none;
+  background-color: #999;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+#backToTop:hover {
+  background-color: #555;
+}

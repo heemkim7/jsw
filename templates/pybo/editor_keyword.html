@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 my-3">
+            <form method="post" class="post-form">
+                {% csrf_token %}
+                <!-- 오류표시 Start -->
+                {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                    {% for field in form %}
+                        {% if field.errors %}
+                        <strong>{{ field.label }}</strong>
+                        {{ field.errors }}
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                <!-- 오류표시 End -->
+                <div class="form-group">
+                    <label for="subject">제목</label>
+                    {% if subject %}
+                    <input type="text" class="form-control" name="subject" id="subject"
+                           value="{{ subject|default_if_none:'' }}">
+                    {% else %}
+                    <input type="text" class="form-control" name="subject" id="subject"
+                           value="{{ subject|default_if_none:'' }}" placeholder="제목을 입력하세요.">
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="subject">내용</label>
+                    <textarea class="form-control" name="content"
+                              id="content" rows="20" placeholder="내용을 입력하세요.">{{ content|default_if_none:'' }}</textarea>
+                    <p class="bytes">0 bytes</p>
+                </div>
+                <input type="hidden" value="{{ qid|default_if_none:'' }}" id="qid">
+
+                <button type="button" class="btn btn-primary col-md-12" id="save_button">저장</button>
+
+                <!--<input type="button" id="cur" value="커서">-->
+            </form>
+        </div>
+
+        <div class="col-md-6" style="width:100%; height:700px; overflow:auto">
+            <table class="table">
+                <thead>
+                <tr class="text-center thead-dark">
+                    <th>번호</th>
+                    <th>내용</th>
+                </tr>
+                </thead>
+                <tbody id="AddOption">
+                <tr class="text-center">
+                    <td class="text-center">1</td>
+                    <td class="text-center">
+                        스크립트 내용
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary col-md-12" id="next_step" style="display:none;">다음 단계로</button>
+            <!--<div class="row my-2">
+                <div class="col-12 input-group">
+                    <input type="text" class="form-control kw" value="">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="btn_search">재검색</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div id="1" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/1.png" style="width:100%;max-height:100%">
+                </div>
+                <div id="2" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/2.png" style="width:100%;max-height:100%">
+                </div>
+                &lt;!&ndash; Add clearfix for only the required viewport &ndash;&gt;
+                <div class="clearfix visible-xs"></div>
+            </div>
+            <div class="row">
+                <div id="3" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/3.png" style="width:100%;max-height:100%">
+                </div>
+                <div id="4" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/4.png" style="width:100%;max-height:100%">
+                </div>
+                &lt;!&ndash; Add clearfix for only the required viewport &ndash;&gt;
+                <div class="clearfix visible-xs"></div>
+            </div>
+            <div class="row my-2">
+                <div class="col-12" id="refresh">
+                    <a href="#" class="btn btn-primary" style="width:100%">새로고침</a>
+                </div>
+            </div>-->
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+.idea
+*.pyc
+__pycache__
+logs
+static/keyword
+static/output
+static/resources
+venv

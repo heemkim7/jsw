@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <!--<div class="row fixed-top">
+
+    </div>-->
+    <div class="row">
+        <div class="col-md-6" id="content_field">
+            <button type="button" class="btn btn-primary col-md-12" id="save_button">스크립트 저장</button>
+            <form method="post" class="post-form">
+                {% csrf_token %}
+                <!-- 오류표시 Start -->
+                {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                    {% for field in form %}
+                        {% if field.errors %}
+                        <strong>{{ field.label }}</strong>
+                        {{ field.errors }}
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                <!-- 오류표시 End -->
+                <div class="form-group">
+                    <label for="subject">제목</label>
+                    <input type="text" class="form-control" name="subject" id="subject"
+                           value="{{ subject|default_if_none:'' }}" placeholder="제목을 입력하세요.">
+                </div>
+                <div class="form-group">
+                    <label for="subject">내용</label>
+                    <textarea class="form-control" name="content"
+                              id="content" rows="20" placeholder="내용을 입력하세요.">{{ content|default_if_none:'' }}</textarea>
+                    <p class="bytes">0 bytes</p>
+                </div>
+                <textarea id="keyword" style="display:none">{{ keyword|default_if_none:'' }}</textarea>
+                <input type="hidden" value="{{ qid|default_if_none:'' }}" id="qid">
+                <input type="hidden" value="" id="subtitle_cnt">
+
+
+
+                <!--<input type="button" id="cur" value="커서">-->
+            </form>
+        </div>
+
+        <div class="col-md-6" id="subtitle_field" style="width:100%; height:700px; overflow:auto">
+            <button type="button" class="btn btn-primary col-md-12" id="next_step" style="display:none;">다음 단계로</button>
+            <div class="row" id="download_ctrl">
+                <div class="col-md-4 col-4 my-2">
+                    <button type="button" class="btn btn-primary col-md-12" id="step_back1">뒤로</button>
+                </div>
+                <div class="col-md-4 col-4 my-2">
+                    <button type="button" class="btn btn-primary col-md-12" id="save_keyword">키워드 저장</button>
+                </div>
+                <div class="col-md-4 col-4 my-2">
+                    <a href="/pybo/editor/subtitle?line=1&qid={{ qid|default_if_none:'' }}" ><button type="button" class="btn btn-primary col-md-12" id="download_subtitle">자막 다운</button></a>
+                </div>
+<!--                <div class="col-md-4 col-4 my-2">
+                    <button type="button" class="btn btn-primary col-md-12" id="search_keyword">키워드 검색 후 다운로드</button>
+                </div>-->
+                <div class="col-md-6 col-6 my-2">
+                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword">키워드 검색</button>
+                </div>
+                <div class="col-md-6 col-6 my-2">
+                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword_download">선택한 짤 다운</button>
+                </div>
+            </div>
+            <div class="badge badge-light sticky-top" id="tooltip_1">수정하고 싶은 부분을 더블클릭하세요.</div>
+            <table class="table">
+                <thead>
+                <tr class="text-center thead-dark">
+                    <th>번호</th>
+                    <th>자막</th>
+                </tr>
+                </thead>
+                <tbody id="AddOption">
+                <tr class="text-center">
+                    <td class="text-center">1</td>
+                    <td class="text-center">
+                        스크립트 내용
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!--<div class="row my-2">
+                <div class="col-12 input-group">
+                    <input type="text" class="form-control kw" value="">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="btn_search">재검색</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div id="1" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/1.png" style="width:100%;max-height:100%">
+                </div>
+                <div id="2" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/2.png" style="width:100%;max-height:100%">
+                </div>
+                <div class="clearfix visible-xs"></div>
+            </div>
+            <div class="row">
+                <div id="3" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/3.png" style="width:100%;max-height:100%">
+                </div>
+                <div id="4" class="col-6 col-sm-6" style="background-color:black;">
+                    <img src="/static/video/4.png" style="width:100%;max-height:100%">
+                </div>
+                <div class="clearfix visible-xs"></div>
+            </div>
+            <div class="row my-2">
+                <div class="col-12" id="refresh">
+                    <a href="#" class="btn btn-primary" style="width:100%">새로고침</a>
+                </div>
+            </div>-->
+        </div>
+
+
+    </div>
+</div>
+<button onclick="topFunction()" id="backToTop" title="Go to top">Top</button>
+<script>
+//Get the button
+var mybutton = document.getElementById("backToTop");
+
+// When the user scrolls down 20px from the top of the document, show the button
+window.onscroll = function() {scrollFunction()};
+
+function scrollFunction() {
+  if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+    mybutton.style.display = "block";
+  } else {
+    mybutton.style.display = "none";
+  }
+}
+
+// When the user clicks on the button, scroll to the top of the document
+function topFunction() {
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+}
+</script>
+{% endblock %}
