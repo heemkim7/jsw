@@ -439,7 +439,8 @@ $(document).ready(function() {
                     qid : qid
                 },
                 success: function(data,status){ //status는 생략해도 됨
-
+                    alert("다운로드 진행중입니다.\n작업이 완료되면 리스트화면에 Down 아이콘이 표시됩니다.");
+                    window.location.href = '/pybo/';
                 },
                 error: function(error){
 

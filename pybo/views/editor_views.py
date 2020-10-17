@@ -494,11 +494,15 @@ def editor_keyword_select_download(request):
 
             ## 로컬드라이브에서 -> 정해진위치에 파일 복사 ##
             ## mp4를 기본으로 바라보고 없으면 mov ##
+
             if os.path.isfile(download_url_path):
                 shutil.copy(download_url_path, downloadPath)
             else:
-                download_url_path = download_url_path.replace('.mp4', '.mov')
-                shutil.copy(download_url_path, downloadPath)
+                try:
+                    download_url_path = download_url_path.replace('.mp4', '.mov')
+                    shutil.copy(download_url_path, downloadPath)
+                except:
+                    continue
             filename_1 = str(download_url_path).split("/")[-1].split(".")[0]
             filename_2 = str(download_url_path).split("/")[-1].split(".")[1]
             print("download_url_path : " + download_url_path)
@@ -550,14 +554,14 @@ def editor_keyword_select_download(request):
             print(list)
             new_zip.write(downloadPath + list, arcname=list)
 
-    with open('./static/output/' + 'keyword_' + question_id + '.zip', 'rb') as fh:
-        quote_file_url = urllib.parse.quote('keyword.zip')
-        response = HttpResponse(fh.read(), content_type='zip')
-        response['Content-Disposition'] = 'attachment;filename*=UTF-8\'\'%s' % quote_file_url
-        editor_modify_download_true(question_id)
-        return response
+    editor_modify_download_true(question_id)
+    # with open('./static/output/' + 'keyword_' + question_id + '.zip', 'rb') as fh:
+    #     quote_file_url = urllib.parse.quote('keyword.zip')
+    #     response = HttpResponse(fh.read(), content_type='zip')
+    #     response['Content-Disposition'] = 'attachment;filename*=UTF-8\'\'%s' % quote_file_url
+    #     return response
 
-    raise Http404
+    #raise Http404
 
 
     return HttpResponse(json.dumps("success"), content_type="application/json")
