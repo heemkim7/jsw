@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+import requests
 import json
 import datetime
 import mimetypes
@@ -277,7 +278,7 @@ def editor_subtitle(request):
             lineCnt += 1
 
     now = datetime.datetime.now()
-    time_for_text = 400
+    time_for_text = 600
 
     ## line 1 ##
     str1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><xmeml version=\"5\">  <sequence id=\"video\">    <name>"
@@ -328,7 +329,7 @@ def editor_subtitle(request):
                 # end_time
                 str14_2 = "</out>            <enabled>true</enabled>            <anamorphic>false</anamorphic>            <alphatype>black</alphatype>            <masterclipid>Outline Text1</masterclipid>            <effect>              <name>Outline Text</name>              <effectid>Outline Text</effectid>              <effectcategory>Text</effectcategory>              <effecttype>generator</effecttype>              <mediatype>video</mediatype>              <parameter>                <parameterid>part1</parameterid>                <name>Text Settings</name>                <value/>              </parameter>              <parameter>                <parameterid>str</parameterid>                <name>Text</name>                <value>"
                 text_2 = line
-                str16_2 = "</value>              </parameter>              <parameter>                <parameterid>font</parameterid>                <name>Font</name>                <value>BMDoHyeon</value>              </parameter>              <parameter>                <parameterid>style</parameterid>                <name>Style</name>                <valuemin>1</valuemin>                <valuemax>1</valuemax>                <valuelist>                  <valueentry>                    <name>Regular</name>                    <value>1</value>                  </valueentry>                </valuelist>                <value>1</value>              </parameter>              <parameter>                <parameterid>align</parameterid>                <name>Alignment</name>                <valuemin>1</valuemin>                <valuemax>3</valuemax>                <valuelist>                  <valueentry>                    <name>Left</name>                    <value>1</value>                  </valueentry>                  <valueentry>                    <name>Center</name>                    <value>2</value>                  </valueentry>                  <valueentry>                    <name>Right</name>                    <value>3</value>                  </valueentry>                </valuelist>                <value>2</value>              </parameter>              <parameter>                <parameterid>size</parameterid>                <name>Size</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>25</value>              </parameter>              <parameter>                <parameterid>track</parameterid>                <name>Tracking</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>1</value>              </parameter>              <parameter>                <parameterid>lead</parameterid>                <name>Leading</name>                <valuemin>-100</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>aspect</parameterid>                <name>Aspect</name>                <valuemin>0</valuemin>                <valuemax>4</valuemax>                <value>1</value>              </parameter>              <parameter>                <parameterid>linewidth</parameterid>                <name>Line Width</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>2</value>              </parameter>              <parameter>                <parameterid>linesoft</parameterid>                <name>Line Softness</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>5</value>              </parameter>              <parameter>                <parameterid>textopacity</parameterid>                <name>Text Opacity</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>100</value>              </parameter>              <parameter>                <parameterid>center</parameterid>                <name>Center</name>                <value>                  <horiz>0.058</horiz>                  <vert>0.421</vert>                </value>              </parameter>              <parameter>                <parameterid>textcolor</parameterid>                <name>Text Color</name>                <value>                  <alpha>255</alpha>                  <red>0</red>                  <green>0</green>                  <blue>0</blue>                </value>              </parameter>              <parameter>                <parameterid>supertext</parameterid>                <name>Text Graphic</name>              </parameter>              <parameter>                <parameterid>superline</parameterid>                <name>Line Graphic</name>              </parameter>              <parameter>                <parameterid>part2</parameterid>                <name>Background Settings</name>                <value/>              </parameter>              <parameter>                <parameterid>xscale</parameterid>                <name>Horizontal Size</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>yscale</parameterid>                <name>Vertical Size</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>xoffset</parameterid>                <name>Horizontal Offset</name>                <valuemin>-100</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>yoffset</parameterid>                <name>Vertical Offset</name>                <valuemin>-100</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>backsoft</parameterid>                <name>Back Soft</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>backopacity</parameterid>                <name>Back Opacity</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>50</value>              </parameter>              <parameter>                <parameterid>backcolor</parameterid>                <name>Back Color</name>                <value>                  <alpha>255</alpha>                  <red>255</red>                  <green>255</green>                  <blue>255</blue>                </value>              </parameter>              <parameter>                <parameterid>superback</parameterid>                <name>Back Graphic</name>              </parameter>              <parameter>                <parameterid>crop</parameterid>                <name>Crop</name>                <value>false</value>              </parameter>              <parameter>                <parameterid>autokern</parameterid>                <name>Auto Kerning</name>                <value>true</value>              </parameter>            </effect>            <sourcetrack>              <mediatype>video</mediatype> <trackindex>1</trackindex>            </sourcetrack>          </generatoritem>"
+                str16_2 = "</value>              </parameter>              <parameter>                <parameterid>font</parameterid><name>Font</name><value>BMDoHyeon</value>              </parameter>              <parameter><parameterid>style</parameterid><name>Style</name><valuemin>1</valuemin><valuemax>1</valuemax><valuelist>  <valueentry>    <name>Regular</name>    <value>1</value>  </valueentry></valuelist><value>1</value>              </parameter>              <parameter><parameterid>align</parameterid><name>Alignment</name><valuemin>1</valuemin><valuemax>3</valuemax><valuelist>  <valueentry>    <name>Left</name>    <value>1</value>  </valueentry>  <valueentry>    <name>Center</name>    <value>2</value>  </valueentry>  <valueentry>    <name>Right</name>    <value>3</value>                  </valueentry>                </valuelist>                <value>2</value>              </parameter>              <parameter>                <parameterid>size</parameterid>                <name>Size</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>25</value>              </parameter>              <parameter>                <parameterid>track</parameterid>                <name>Tracking</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>1</value>              </parameter>              <parameter>                <parameterid>lead</parameterid>                <name>Leading</name>                <valuemin>-100</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>aspect</parameterid>                <name>Aspect</name>                <valuemin>0</valuemin>                <valuemax>4</valuemax>                <value>1</value>              </parameter>              <parameter>                <parameterid>linewidth</parameterid>                <name>Line Width</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>2</value>              </parameter>              <parameter>                <parameterid>linesoft</parameterid>                <name>Line Softness</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>5</value>              </parameter>              <parameter>                <parameterid>textopacity</parameterid>                <name>Text Opacity</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>100</value>              </parameter>              <parameter>                <parameterid>center</parameterid>                <name>Center</name>                <value>                  <horiz>0.058</horiz>                  <vert>0.421</vert>                </value>              </parameter>              <parameter>                <parameterid>textcolor</parameterid>                <name>Text Color</name>                <value>                  <alpha>255</alpha>                  <red>0</red>                  <green>0</green>                  <blue>0</blue>                </value>              </parameter>              <parameter>                <parameterid>supertext</parameterid>                <name>Text Graphic</name>              </parameter>              <parameter>                <parameterid>superline</parameterid>                <name>Line Graphic</name>              </parameter>              <parameter>                <parameterid>part2</parameterid>                <name>Background Settings</name>                <value/>              </parameter>              <parameter>                <parameterid>xscale</parameterid>                <name>Horizontal Size</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>yscale</parameterid>                <name>Vertical Size</name>                <valuemin>0</valuemin>                <valuemax>200</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>xoffset</parameterid>                <name>Horizontal Offset</name>                <valuemin>-100</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>yoffset</parameterid>                <name>Vertical Offset</name>                <valuemin>-100</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>backsoft</parameterid>                <name>Back Soft</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>0</value>              </parameter>              <parameter>                <parameterid>backopacity</parameterid>                <name>Back Opacity</name>                <valuemin>0</valuemin>                <valuemax>100</valuemax>                <value>50</value>              </parameter>              <parameter>                <parameterid>backcolor</parameterid>                <name>Back Color</name>                <value>                  <alpha>255</alpha>                  <red>255</red>                  <green>255</green>                  <blue>255</blue>                </value>              </parameter>              <parameter>                <parameterid>superback</parameterid>                <name>Back Graphic</name>              </parameter>              <parameter>                <parameterid>crop</parameterid>                <name>Crop</name>                <value>false</value>              </parameter>              <parameter>                <parameterid>autokern</parameterid>                <name>Auto Kerning</name>                <value>true</value>              </parameter>            </effect>            <sourcetrack>              <mediatype>video</mediatype> <trackindex>1</trackindex>            </sourcetrack>          </generatoritem>"
 
                 result_2 += str6_2 + start_time_2 + str8_2 + end_time_2 + str10_2 + start_time_2 + str12_2 + end_time_2 + str14_2 + text_2 + str16_2
                 timeCnt += time_for_text
@@ -533,8 +534,10 @@ def editor_keyword_select_download(request):
                 html = urlopen(req)
             except HTTPError as e:
                 print('HTTPError')
+                continue
             except URLError as e:
                 print('URLError')
+                continue
 
             googleimgUrlArr = []
             with html as f:
@@ -563,6 +566,14 @@ def editor_keyword_select_download(request):
 
     #raise Http404
 
+    question = get_object_or_404(Question, pk=question_id)
+    #r = send_to_kakao(question.subject)
+
+    #r = get_kakao_friend()
+    #print(r.text)
+
+    #r = send_to_kakao_for_friend(question.subject)
+    #print(r.text)
 
     return HttpResponse(json.dumps("success"), content_type="application/json")
 
@@ -603,6 +614,7 @@ def editor_keyword_search(request):
                     down_key = down_key.strip()
                     context = searchFile(num, down_key, question_id)
             cnt += 1
+
 
     return HttpResponse(json.dumps(context), content_type="application/json; charset=utf=8")
 
@@ -1194,3 +1206,58 @@ def searchFile(cnt, keyword, question_id):
     return M
 
     print('Image Crawling is done.')
+
+
+
+
+KAKAO_TOKEN = "9cFyITmgIVxuqTCU4ltvJQqTU4XXEs_uTbAVbgopyV4AAAF1iZM_OQ"
+def send_to_kakao(text):
+    header = {"Authorization": 'Bearer ' + KAKAO_TOKEN}
+    url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
+    post = {
+        "object_type": "text",
+        "text": text,
+        "link": {
+            "web_url": "https://developers.kakao.com",
+            "mobile_web_url": "https://developers.kakao.com"
+        },
+    }
+
+    data = {"template_object": json.dumps(post)}
+    return requests.post(url, headers=header, data=data)
+
+
+def send_to_kakao_for_friend(text):
+    header = {
+        "Authorization": 'Bearer ' + KAKAO_TOKEN
+    }
+    url = "https://kapi.kakao.com/v1/api/talk/friends/message/default/send"
+    post = {
+        "object_type": "feed",
+        "content": {
+            "title": "디저트 사진",
+            "description": "아메리카노, 빵, 케익",
+            "image_url": "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
+            "image_width": 640,
+            "image_height": 640,
+            "link": {
+            "web_url": "http://www.daum.net",
+            "mobile_web_url": "http://m.daum.net",
+            "android_execution_params": "contentId=100",
+            "ios_execution_params": "contentId=100"
+            }
+        },
+    }
+
+    data = {"template_object": json.dumps(post), "receiver_uuids":  "[\"y_PK8sr-zPzQ49Lk0Ojc6Nn1wfjB9sf_jQ\"]"}
+    return requests.post(url, headers=header, data=data)
+
+
+def get_kakao_friend():
+    header = {
+        "Authorization": 'Bearer ' + KAKAO_TOKEN
+    }
+
+    url = "https://kapi.kakao.com/v1/api/talk/friends?friend_order=favorite&limit=100&order=asc"
+
+    return requests.get(url, headers=header)

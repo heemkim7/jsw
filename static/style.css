@@ -36,3 +36,59 @@ td.subtitle_num{
 #backToTop:hover {
   background-color: #555;
 }
+
+
+
+
+.bootstrap-tagsinput{
+    width: 100%;
+}
+.label-info{
+    background-color: #007bff;
+}
+.label {
+    display: inline-block;
+    padding: .25em .4em;
+    font-size: 100%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25rem;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,
+    border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+
+
+
+#videosList {
+ max-width: 600px;
+  overflow: hidden;
+}
+
+.video {
+  width: 600px;
+  /*height: 100%;*/
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+
+video[poster]{
+    height:90%;
+    width:100%;
+}
+
+
+/* Hide Play button + controls on iOS */
+video::-webkit-media-controls {
+    display:none !important;
+}
+
+
+/* tag margin override */
+.tag{
+    margin-bottom:3px;
+}

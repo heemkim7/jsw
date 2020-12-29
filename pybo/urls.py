@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import base_views, question_views, editor_views, answer_views, comment_views, vote_views
+from .views import base_views, question_views, editor_views, answer_views, comment_views, vote_views, upload_views
 
 app_name = 'pybo'
 
@@ -23,6 +23,14 @@ urlpatterns = [
     path('editor/keyword/save', editor_views.editor_keyword_save, name='editor_keyword_save'),
     path('editor/keyword/search', editor_views.editor_keyword_search, name='editor_keyword_search'),
     path('editor/keyword/selectdown', editor_views.editor_keyword_select_download, name='editor_keyword_select_download'),
+
+
+    # upload_views.py
+    path('upload/', upload_views.upload, name='upload'),
+    path('upload/list', upload_views.upload_list, name='upload_list'),
+    path('upload/modify/<int:upload_id>/', upload_views.upload_modify, name='upload_modify'),
+    path('upload/delete/', upload_views.upload_delete, name='upload_delete'),
+    path('upload/tag_list', upload_views.upload_tag_list, name='upload_tag_list'),
 
     # answer_views.py
     path('answer/create/<int:question_id>/', answer_views.answer_create, name='answer_create'),

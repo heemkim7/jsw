@@ -1,6 +1,6 @@
 from django import forms
 
-from pybo.models import Question, Answer, Comment
+from pybo.models import Question, Answer, Comment, Upload
 
 
 class QuestionForm(forms.ModelForm):
@@ -31,3 +31,11 @@ class CommentForm(forms.ModelForm):
         }
 
 
+class UploadForm(forms.ModelForm):
+    class Meta:
+        model = Upload
+        fields = ['tag', 'filepath']
+        labels = {
+            'tag': 'Tags',
+            'filepath': 'File Path',
+        }

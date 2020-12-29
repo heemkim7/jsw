@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="container-fluid">
     <!--<div class="row fixed-top">
@@ -122,6 +122,7 @@
 </div>
 <button onclick="topFunction()" id="backToTop" title="Go to top">Top</button>
 <script>
+
 //Get the button
 var mybutton = document.getElementById("backToTop");
 
@@ -142,4 +143,8 @@ function topFunction() {
   document.documentElement.scrollTop = 0;
 }
 </script>
+{% endblock %}
+{% block script %}
+<!-- Editor JS -->
+<script src="{% static 'editor.js' %}"></script>
 {% endblock %}

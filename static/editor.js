@@ -166,6 +166,58 @@ $(document).ready(function() {
         }
     }
 
+    $(window).bind('keydown', function(event) {
+        if (event.ctrlKey || event.metaKey) {
+            switch (String.fromCharCode(event.which).toLowerCase()) {
+            case 's':
+                event.preventDefault();
+                var subject = $('#subject').val();
+                var text = $('textarea#content').val();
+                var qid = $('#qid').val();
+
+                if(text == "" || text == null || text == "undefined"){
+                    alert("내용은 필수항목입니다");
+                    var obj = document.getElementById("content");
+                    obj.focus();
+                }
+                else{
+                    //subject = encodeURIComponent(subject);
+                    //text = encodeURIComponent(text);
+                    $.ajax({
+                        type:"POST",
+                        url: "/pybo/editor/create",
+                        data: {
+                            subject : subject,
+                            content : text,
+                            qid : qid
+                        },
+                        success: function(data,status){ //status는 생략해도 됨
+                            alert("스크립트 저장됨");
+                            $('#qid').val(data.qid);
+                            $('#next_step').css('display','');
+                            if(data.status == 'create')
+                                window.location.href = '/pybo/' + data.qid;
+                        },
+                        error: function(error){
+                            console.log(error.responseText);
+                        }
+                    });
+                }
+                break;
+            /*
+            case 'f':
+                event.preventDefault();
+                alert('ctrl-f');
+                break;
+            case 'g':
+                event.preventDefault();
+                alert('ctrl-g');
+                break;
+                */
+            }
+        }
+    });
+
     function getCookie(name) {
         var cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -217,9 +269,19 @@ $(document).ready(function() {
         return len;
     }
 
+    function getTextLength_removeBlank(str) {
+        var len = 0;
+
+        str = str.replace(/ /g,"");
+        return str.length;
+    }
+
     function bytesHandler(obj){
         var text = $(obj).val();
-        $('p.bytes').text(getTextLength(text)+' bytes');
+        var output = '';
+        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 btye ), ';
+        output += '공백 제거 : ' + getTextLength_removeBlank(text)+' ( 권장 3700 )';
+        $('p.bytes').text(output);
         //console.log($('textarea#content').val());
     }
 
@@ -438,13 +500,18 @@ $(document).ready(function() {
                     keywords : srcList,
                     qid : qid
                 },
+                timeout: 1000,
                 success: function(data,status){ //status는 생략해도 됨
                     alert("다운로드 진행중입니다.\n작업이 완료되면 리스트화면에 Down 아이콘이 표시됩니다.");
                     window.location.href = '/pybo/';
                 },
                 error: function(error){
-
-                    console.log(error.responseText);
+                    alert("다운로드 진행중입니다.\n작업이 완료되면 리스트화면에 Down 아이콘이 표시됩니다.");
+                    window.location.href = '/pybo/';
+                },
+                fail: function(){
+                    alert("다운로드 진행중입니다.\n작업이 완료되면 리스트화면에 Down 아이콘이 표시됩니다.");
+                    window.location.href = '/pybo/';
                 }
             });
         }

@@ -1,43 +1,107 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
-<div class="container-fluid">
-    <!--<div class="row fixed-top">
-
-    </div>-->
-    <div class="row">
-        <div class="col-md-6" id="content_field">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form }}
-                <button type="submit">Upload File</button>
-            </form>
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">영상 등록</h5>
+        {% if form.id %}
+        <div class="col-lg-3 col-md-4 col-6 video">
+            <a href="/media/{{ form.filepath.value }}" target="_blank">
+            <video class="thevideo" poster="/media/{{ form.filefolder }}/{{ form.id }}.jpg" loop preload="none" style="width:500px">
+                <source src="/media/{{ form.filepath.value }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            </a>
         </div>
+        {% else %}
+        {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
 
 
-    </div>
+        <!--   <div class="form-group">
+            <label for="subject">태그</label>
+            <input type="text" class="form-control" data-role="tagsinput" name="tags" id="subject"
+                   value="{{ form.tags.value|default_if_none:'' }}">
+            </div>
+
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="customFile">
+                <label class="custom-file-label" for="customFile">{{ form.filepath.value|default_if_none:'' }}</label>
+              </div>
+-->
+        <div class="row">
+            {% if form.filepath.value %}
+            {% else %}
+            <div class="custom-file col-lg-5 col-md-5 col-12 my-3">
+                <input type="file" class="custom-file-input" name="filepath" id="id_filepath">
+                <label class="custom-file-label" for="id_filepath">파일 선택</label>
+            </div>
+            {% endif %}
+            <div class="custom-file col-lg-5 col-md-5 col-12 my-3">
+                <input type="text" class="form-control" name="tag" maxlength="200" required="" id="id_tag" data-role="tagsinput" placeholder="태그 입력" value="{{ form.tag.value|default_if_none:'' }}">
+            </div>
+            <div class="custom-file col-lg-2 col-md-2 col-12 my-3">
+                {% if form.filepath.value %}
+                <button type="submit" class="btn btn-primary">저장</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">삭제</button>
+                {% else %}
+                <button type="submit" class="btn btn-primary">업로드</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">게시물 삭제</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        게시물을 정말 삭제하시겠습니까?<p>한번 삭제하면 되돌릴 수 없습니다.
+      </div>
+      <div class="modal-footer">
+      	<button type="button" class="btn btn-primary" onclick="clickDel(upload_detail)">삭제</button>
+       	<button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+      </div>
+    </div>
+  </div>
+</div>
+<form name="upload_detail">
+    {% csrf_token %}
+	<input type="hidden" name="upload_id" value="{{ form.id }}">
+</form>
+{% endblock %}
 
-<button onclick="topFunction()" id="backToTop" title="Go to top">Top</button>
-<script>
-//Get the button
-var mybutton = document.getElementById("backToTop");
+{% block script %}
+<script type='text/javascript'>
+// Add the following code if you want the name of the file appear on select
+$(".custom-file-input").on("change", function() {
+  var fileName = $(this).val().split("\\").pop();
+  $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+});
 
-// When the user scrolls down 20px from the top of the document, show the button
-window.onscroll = function() {scrollFunction()};
+var figure = $(".video").hover( hoverVideo, hideVideo );
 
-function scrollFunction() {
-  if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-    mybutton.style.display = "block";
-  } else {
-    mybutton.style.display = "none";
-  }
-}
+    function hoverVideo(e) {
+        $('video', this).get(0).play();
+    }
 
-// When the user clicks on the button, scroll to the top of the document
-function topFunction() {
-  document.body.scrollTop = 0;
-  document.documentElement.scrollTop = 0;
-}
+    function hideVideo(e) {
+        $('video', this).get(0).pause();
+    }
+
+
+    // 삭제 버튼 동작
+	function clickDel(formName) {
+		formName.action = "/pybo/upload/delete/";
+		formName.method = "post";
+		formName.submit();
+	}
+
 </script>
 {% endblock %}

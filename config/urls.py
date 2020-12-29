@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from django.conf.urls.static import static
+from django.views.static import serve
+from django.conf import settings
+from django.urls import re_path
+
 from pybo.views import base_views
 
 urlpatterns = [
@@ -23,6 +28,7 @@ urlpatterns = [
     path('pybo/', include('pybo.urls')),
     path('common/', include('common.urls')),
     path('', base_views.index, name='index'),  # '/' 에 해당되는 path
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 handler404 = 'common.views.page_not_found'

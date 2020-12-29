@@ -5,5 +5,5 @@ logs
 static/keyword
 static/output
 static/resources
+media
 venv
-db.sqlite3
