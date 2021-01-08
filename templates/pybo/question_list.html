@@ -6,54 +6,60 @@
     <div class="row justify-content-between my-3">
         <div class="col-lg-2 col-md-3 col-4">
             <select class="form-control so">
-                <option value="recent" {% if so == 'recent' %}selected{% endif %}>최신순</option>
+                <option value="recent" {% if so == 'recent' %}selected{% endif %}>업로드순</option>
                 <!--<option value="recommend" {% if so == 'recommend' %}selected{% endif %}>추천순</option>-->
-                <option value="popular" {% if so == 'popular' %}selected{% endif %}>인기순</option>
+                <option value="create" {% if so == 'create' %}selected{% endif %}>생성날짜순</option>
             </select>
         </div>
         <div class="col-lg-4 col-md-6 col-6 input-group">
             <input type="text" onkeypress="search_media()" class="form-control kw" value="{{ kw|default_if_none:'' }}">
             <div class="input-group-append">
-                <button class="btn btn-outline-secondary" type="button" id="btn_search">찾기</button>
+                <button class="btn btn-outline-secondary" type="button" id="btn_search">검색</button>
             </div>
         </div>
     </div>
     <table class="table">
         <thead>
         <tr class="text-center thead-dark">
-            <th>번호</th>
-            <th style="width:50%">제목</th>
-            <th>글쓴이</th>
-            <th>작성일시</th>
-            <th>Down</th>
+            <th style="width:70%">제목</th>
+            <th>작성자</th>
+            <th>업로드</th>
         </tr>
         </thead>
         <tbody>
         {% if question_list %}
         {% for question in question_list %}
         <tr class="text-center">
-            <td>
-                <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
+            <!--<td>
+                &lt;!&ndash; 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 &ndash;&gt;
                 {{ question_list.paginator.count|sub:question_list.start_index|sub:forloop.counter0|add:1 }}
-            </td>
+            </td>-->
 <!--            <td>
                 {% if question.voter.all.count > 0 %}
                 <span class="badge badge-warning px-2 py-1">{{ question.voter.all.count }}</span>
                 {% endif %}
             </td>-->
             <td class="text-left">
-                <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>
-                <span class="text-danger small ml-2">{{ question.answer_set.count }}</span>
-                {% if question.answer_set.count > 0 %}
+                {% if question.status == '완료' %}
+                <span>[{{ question.status|default_if_none:'' }}]</span>
+                {% elif question.status is none %}
+                <span style="color:blue;font-weight: bold;"></span>
+                {% else %}
+                <span style="color:blue;font-weight: bold;">[{{ question.status|default_if_none:'' }}]</span>
                 {% endif %}
-            </td>
-            <td>{{ question.author.username }}</td>  <!-- 글쓴이 추가 -->
-            <td>{{ question.create_date }}</td>
-            <td>
+
+                <a href="{% url 'pybo:detail' question.id %}"> {{ question.subject|truncatechars:42 }}</a>
                 {% if question.download_flag == '1' %}
                 <a href="/static/output/keyword_{{ question.id }}.zip"><img src="/static/img/btn_download.png" style="width:15px"></a>
                 {% endif %}
             </td>
+            <td>{{ question.author.username }}</td>  <!-- 글쓴이 추가 -->
+            <td>{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}</td>
+            <!--{% if question.modify_date is null %}
+            <td>{{ question.create_date|date:"y/m/d P" }}</td>
+            {% else %}
+            <td>{{ question.modify_date|date:"y/m/d P"|default_if_none:'' }}</td>
+            {% endif %}-->
         </tr>
         {% endfor %}
         {% else %}

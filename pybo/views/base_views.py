@@ -21,12 +21,10 @@ def index(request):
     so = request.GET.get('so', 'recent')  # 정렬기준
 
     # 정렬
-    if so == 'recommend':
-        question_list = Question.objects.annotate(num_voter=Count('voter')).order_by('-num_voter', '-create_date')
-    elif so == 'popular':
-        question_list = Question.objects.annotate(num_answer=Count('answer')).order_by('-num_answer', '-create_date')
-    else:  # recent
+    if so == 'create':
         question_list = Question.objects.order_by('-create_date')
+    else:  # recent
+        question_list = Question.objects.order_by('-upload_target', '-modify_date')
 
     # 검색
     if kw:

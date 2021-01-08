@@ -26,8 +26,79 @@
             <label for="content">내용</label>
             <textarea class="form-control" name="content"
                       id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+            <p class="bytes">0 bytes</p>
         </div>
+        <div class="form-group">
+            <label for="status">상태</label>
+            <input type="hidden" value="{{ form.status.value|default_if_none:'' }}" id="select_default">
+            <select class="form-control" name="status" id="status">
+              <option value="내용">내용</option>
+              <option value="녹음">녹음</option>
+              <option value="영상">영상</option>
+              <option value="완료">완료</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="upload_target">업로드 날짜</label>
+            <div class="input-group date" id="upload_target_picker" data-target-input="nearest">
+            <input type="text" class="form-control datetimepicker-input" data-target="#upload_target_picker" value="" name="upload_target" id="upload_target">
+                <div class="input-group-append" data-target="#upload_target_picker" data-toggle="datetimepicker">
+                    <div class="input-group-text">
+                    <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">저장하기</button>
     </form>
 </div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+<script type='text/javascript'>
+$(document).ready(function(){
+    $(function(){
+        $('textarea#content').keyup(function(){
+            bytesHandler(this);
+            realtime_Check();
+        });
+    });
+
+    $(function () {
+        $('#upload_target_picker').datetimepicker({ format: 'YY/MM/DD'});
+    });
+
+    $("select option[value="+$('#select_default').val()+"]").attr("selected","selected");
+
+    function getTextLength(str) {
+        var len = 0;
+
+        for (var i = 0; i < str.length; i++) {
+            if (escape(str.charAt(i)).length == 6) {
+                len++;
+            }
+            len++;
+        }
+        return len;
+    }
+
+    function getTextLength_removeBlank(str) {
+        var len = 0;
+
+        str = str.replace(/ /g,"");
+        return str.length;
+    }
+
+    function bytesHandler(obj){
+        var text = $(obj).val();
+        var output = '';
+        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 btye ), ';
+        output += '공백 제거 : ' + getTextLength_removeBlank(text)+' ( 권장 3700 )';
+        $('p.bytes').text(output);
+        //console.log($('textarea#content').val());
+    }
+});
+</script>
 {% endblock %}

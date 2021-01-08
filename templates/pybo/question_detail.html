@@ -11,7 +11,7 @@
     {% endfor %}
     </div>
     {% endif %}
-    <h2 class="border-bottom py-2">{{ question.subject }}</h2>
+    <h4 class="border-bottom py-2">{{ question.subject }}</h4>
     <form action="{% url 'pybo:editor' %}" method="post" class="my-3">
         {% csrf_token %}
         {% if form.errors %}

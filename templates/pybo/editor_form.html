@@ -2,9 +2,7 @@
 {% load static %}
 {% block content %}
 <div class="container-fluid">
-    <!--<div class="row fixed-top">
-
-    </div>-->
+    <h5 class="my-3 border-bottom pb-2">자막 생성</h5>
     <div class="row">
         <div class="col-md-6" id="content_field">
             <button type="button" class="btn btn-primary col-md-12" id="save_button">스크립트 저장</button>
@@ -34,11 +32,19 @@
                     <p class="bytes">0 bytes</p>
                 </div>
                 <textarea id="keyword" style="display:none">{{ keyword|default_if_none:'' }}</textarea>
+                <div class="form-group">
+                    <label for="status">상태</label>
+                    <input type="hidden" value="{{ status|default_if_none:'' }}" id="select_default">
+                    <select class="form-control" name="status" id="status">
+                      <option value="내용">내용</option>
+                      <option value="녹음">녹음</option>
+                      <option value="영상">영상</option>
+                      <option value="완료">완료</option>
+                    </select>
+                </div>
+
                 <input type="hidden" value="{{ qid|default_if_none:'' }}" id="qid">
                 <input type="hidden" value="" id="subtitle_cnt">
-
-
-
                 <!--<input type="button" id="cur" value="커서">-->
             </form>
         </div>
@@ -62,7 +68,7 @@
                     <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword">키워드 검색</button>
                 </div>
                 <div class="col-md-6 col-6 my-2">
-                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword_download">선택한 짤 다운</button>
+                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword_download">선택 영상 다운</button>
                 </div>
             </div>
             <div class="badge badge-light sticky-top" id="tooltip_1">수정하고 싶은 부분을 더블클릭하세요.</div>
@@ -116,13 +122,15 @@
                 </div>
             </div>-->
         </div>
-
-
+    </div>
+    <div class="row justify-content-center">
+         <div class="alert alert-success alert-dismissible fade show col-md-2 col-6" role="alert" style="display:none;text-align:center;position:fixed;bottom:0;">
+            <strong>저장되었습니다.</strong>
+        </div>
     </div>
 </div>
 <button onclick="topFunction()" id="backToTop" title="Go to top">Top</button>
 <script>
-
 //Get the button
 var mybutton = document.getElementById("backToTop");
 

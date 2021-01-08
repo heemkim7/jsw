@@ -1,6 +1,9 @@
 
 $(document).ready(function() {
+    // 다운로드 버튼 숨기기
     $('#download_ctrl').css('display','none');
+    // 상태 select box 기본 선택
+    $("select option[value="+$('#select_default').val()+"]").attr("selected","selected");
 
     function realtime_Check(){
         if(document.location.href.indexOf("/pybo/editor") > 0){
@@ -30,12 +33,39 @@ $(document).ready(function() {
                     for(var i in res) {
                         if(i == 0){}
                         else if(i % 2 == 0){
-                            contents += '<tr class=\"text-center subtitle_back\">';
-                            contents +=     '<td class=\"subtitle_num\" style=\"width:70px\">'+ cnt + '</td>';
+                            var _width = '1200';
+                            var _height = '600';
+                            // 팝업을 가운데 위치시키기 위해 아래와 같이 값 구하기
+                            var _left = ( window.screen.width/2) - (_width /2);
+                            var _top = ( window.screen.height/2) - (_height /2);
+                            //console.log(cnt + ":" + subtitle_line);
+                            subtitle_line = subtitle_line.replace(/한국/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"한국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">한국</a>");
+                            subtitle_line = subtitle_line.replace(/대한민국/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"한국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">대한민국</a>");
+                            subtitle_line = subtitle_line.replace(/우리나라/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"한국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">우리나라</a>");
+                            subtitle_line = subtitle_line.replace(/일본/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"일본"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">일본</a>");
+                            subtitle_line = subtitle_line.replace(/아베/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"일본"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">아베</a>");
+                            subtitle_line = subtitle_line.replace(/스가/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"일본"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">스가</a>");
+                            subtitle_line = subtitle_line.replace(/중국/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"중국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">중국</a>");
+                            subtitle_line = subtitle_line.replace(/시진핑/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"중국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">시진핑</a>");
+                            subtitle_line = subtitle_line.replace(/프랑스/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"프랑스"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">프랑스</a>");
+                            subtitle_line = subtitle_line.replace(/베트남/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"베트남"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">베트남</a>");
+                            subtitle_line = subtitle_line.replace(/CO-19/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"코로나"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">CO-19</a>");
+                            subtitle_line = subtitle_line.replace(/의료/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"의료"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">의료</a>");
+                            subtitle_line = subtitle_line.replace(/의사/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"의사"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">의사</a>");
+                            subtitle_line = subtitle_line.replace(/돈/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">돈</a>");
+                            subtitle_line = subtitle_line.replace(/달러/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">달러</a>");
+                            subtitle_line = subtitle_line.replace(/엔화/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">엔화</a>");
+                            subtitle_line = subtitle_line.replace(/위안화/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">위안화</a>");
+                            subtitle_line = subtitle_line.replace(/주식/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"그래프"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">주식</a>");
+                            subtitle_line = subtitle_line.replace(/상승/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"그래프"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">상승</a>");
+                            subtitle_line = subtitle_line.replace(/하락/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"그래프"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">하락</a>");
+
+                            contents += '<tr class=\"text-center subtitle_back\" id=\"tr_search_subtitle_'+ cnt +'\">';
+                            contents +=     '<td class=\"subtitle_num\" style=\"width:50px\">'+ cnt + '</td>';
                             contents +=     '<td class=\"subtitle_line\">'+ subtitle_line +'</td>';
                             contents += '</tr>';
                             contents +=     '<tr class=\"text-center subtitle_keyword\" id=\"tr_search_keyword_'+ cnt +'\" style=\"display:none\">'
-                            +'<td><img src=\"/static/img/refresh.png\" style=\"width:30px\" class=\"refresh_keyword\" id=\"refresh_keyword_'+cnt+'\"></td><td>'
+                            +'<td><img src=\"/static/img/refresh.png\" style=\"width:20px\" class=\"refresh_keyword\" id=\"refresh_keyword_'+cnt+'\"></td><td>'
                             contents +=         '<input type=\"text\" onkeypress=\"enter_test('+cnt+')\" class=\"form-control\" value=\"\" style=\"width:100%\" id=\"search_keyword_'+ cnt +'\">'
                             contents +=     '</td></tr>'
                             contents +=     '<tr class=\"text-center subtitle_keyword\" id=\"tr_search_keyword_output_'+ cnt +'\" style=\"display:none\"><td></td><td>'
@@ -112,7 +142,19 @@ $(document).ready(function() {
                     });
 
                     $('.refresh_keyword').click(function(){
+
                         var num = this.id;
+                        num = num.replace('refresh_keyword_','');
+                        var key = $('#search_keyword_'+num).val();
+
+
+                        var url = '/pybo/upload/search/keyword?page=1&kw=';
+
+                        if(key != null && key != undefined && key != ''){
+                            window.open(url+key+'&num='+num, 'windowPop', 'width=1200, height=600, left=680, top=420, resizable = yes, location = no ')
+                        }
+
+                        /*var num = this.id;
                         num = num.replace('refresh_keyword_','');
                         var key = $('#search_keyword_'+num).val();
                         if(key != null && key != undefined && key != ''){
@@ -155,7 +197,7 @@ $(document).ready(function() {
                                     console.log(error.responseText);
                                 }
                             });
-                        }
+                        }*/
                     });
 
                 },
@@ -174,6 +216,7 @@ $(document).ready(function() {
                 var subject = $('#subject').val();
                 var text = $('textarea#content').val();
                 var qid = $('#qid').val();
+                var status = $('#select_default').val();
 
                 if(text == "" || text == null || text == "undefined"){
                     alert("내용은 필수항목입니다");
@@ -189,14 +232,20 @@ $(document).ready(function() {
                         data: {
                             subject : subject,
                             content : text,
-                            qid : qid
+                            qid : qid,
+                            status : status
                         },
                         success: function(data,status){ //status는 생략해도 됨
-                            alert("스크립트 저장됨");
+                            //alert("스크립트 저장됨");
+                            $('.alert').css('display','');
                             $('#qid').val(data.qid);
                             $('#next_step').css('display','');
                             if(data.status == 'create')
                                 window.location.href = '/pybo/' + data.qid;
+
+                            setTimeout("$('.alert').css('display','none');", 2000);
+                            $('#next_step').focus();
+                            $('#next_step').get(0).scrollIntoView(true);
                         },
                         error: function(error){
                             console.log(error.responseText);
@@ -318,6 +367,7 @@ $(document).ready(function() {
             var subject = $('#subject').val();
             var text = $('textarea#content').val();
             var qid = $('#qid').val();
+            var status = $('#select_default').val();
 
             if(text == "" || text == null || text == "undefined"){
                 alert("내용은 필수항목입니다");
@@ -333,14 +383,19 @@ $(document).ready(function() {
                     data: {
                         subject : subject,
                         content : text,
-                        qid : qid
+                        qid : qid,
+                        status : status
                     },
                     success: function(data,status){ //status는 생략해도 됨
-                        alert("스크립트 저장됨");
+                        $('.alert').css('display','');
                         $('#qid').val(data.qid);
                         $('#next_step').css('display','');
                         if(data.status == 'create')
                             window.location.href = '/pybo/' + data.qid;
+
+                        setTimeout("$('.alert').css('display','none');", 2000);
+                        $('#next_step').focus(); // 커서 이동
+                        $('#next_step').get(0).scrollIntoView(true); // 스크롤 이동
                     },
                     error: function(error){
                         console.log(error.responseText);
@@ -551,12 +606,18 @@ $(document).ready(function() {
 });
 
 
-
-
 function enter_test(num) {
     if ( window.event.keyCode == 13 ) {
-
                         var key = $('#search_keyword_'+num).val();
+
+
+                        var url = '/pybo/upload/search/keyword?page=1&kw=';
+
+                        if(key != null && key != undefined && key != ''){
+                            window.open(url+key+'&num='+num, 'windowPop', 'width=1200, height=600, left=680, top=420, resizable = yes, location = no ')
+                        }
+
+                        /*var key = $('#search_keyword_'+num).val();
                         if(key != null && key != undefined && key != ''){
                             keywords = num+'|'+key;
                             console.log(keywords);
@@ -597,6 +658,6 @@ function enter_test(num) {
                                     console.log(error.responseText);
                                 }
                             });
-                        }
+                        }*/
     }
 }

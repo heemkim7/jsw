@@ -7,6 +7,7 @@ from datetime import datetime
 
 from ..models import Upload
 from pybo.forms import UploadForm
+import os
 
 import cv2
 
@@ -23,18 +24,18 @@ def upload(request):
             if request.FILES:
                 if 'filepath' in request.FILES.keys():
                     upload.filename = request.FILES['filepath'].name
-            upload.filename = str(upload.filename).replace(' ','_')
-            upload.filename = str(upload.filename).replace('(', '')
-            upload.filename = str(upload.filename).replace(')', '')
-            upload.filefolder = get_path()
             upload.author = request.user  # 추가한 속성 author 적용
             upload.create_date = timezone.now()
-
+            upload.save()
+            upload.filefolder = get_path()
+            upload.filename = str(upload.filepath).replace(upload.filefolder+'/','')
+            # upload.filename = str(upload.filename).replace(' ','_')
+            # upload.filename = str(upload.filename).replace('(', '')
+            # upload.filename = str(upload.filename).replace(')', '')
             print(upload.filefolder)
             print(upload.filename)
             print(upload.filepath)
             upload.save()
-
             makeStillCutImage('media/'+get_path(), upload.filename, upload.id)
             return redirect('pybo:upload_list')
     else:
@@ -52,7 +53,7 @@ def get_path():
 def makeStillCutImage(path, name, id, onlyMainStillCut=False):
     videoObj = cv2.VideoCapture(path+'/'+name)
 
-    seconds = 10
+    seconds = 3
     length = int(videoObj.get(cv2.CAP_PROP_FRAME_COUNT))
     width = int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -75,12 +76,16 @@ def makeStillCutImage(path, name, id, onlyMainStillCut=False):
 
         if frameId % multiplier < 1:
             # cv2.resize(img, dsize, fx, fy, interpolation)
-            resizeImage = cv2.resize(frame, (1280, 720))
-            print(path)
-            cv2.imwrite(path + '/' + str(id) + ".jpg", resizeImage)
+            if frameCount == 1:
+                resizeImage = cv2.resize(frame, (1280, 720))
+                print(path)
+                cv2.imwrite(path + '/' + str(id) + ".jpg", resizeImage)
+            else:
+                print(path)
+
             frameCount += 1
 
-        if frameCount == 1:
+        if frameCount == 2:
             break
 
         if onlyMainStillCut:
@@ -110,7 +115,8 @@ def upload_list(request):
                 distinct_tag_list.append(tag)
 
     distinct_tag_list.sort()
-    print(distinct_tag_list)
+    #print(distinct_tag_list)
+    #len(distinct_tag_list)
 
     # 검색
     if kw:
@@ -121,34 +127,11 @@ def upload_list(request):
         ).distinct()
 
     # 페이징처리
-    paginator = Paginator(upload_list, 16)  # 페이지당 10개씩 보여주기
+    paginator = Paginator(upload_list, 24)  # 페이지당 10개씩 보여주기
     page_obj = paginator.get_page(page)
 
     context = {'upload_list': page_obj, 'page': page, 'kw': kw, 'distinct_tag_list': distinct_tag_list}
     return render(request, 'pybo/upload_list.html', context)
-
-
-@login_required(login_url='common:login')
-def upload_tag_list(request):
-    """
-    파일업로드 태그 목록 출력
-    """
-
-    upload_list = Upload.objects.all()
-    tag_list = []
-
-    for list in upload_list:
-        ##print(list.tag)
-        tags = list.tag.split(',')
-        for tag in tags:
-            if tag not in tag_list:
-                tag_list.append(tag)
-
-    tag_list.sort()
-    print(tag_list)
-
-    context = {'tag_list': tag_list}
-    return render(request, 'pybo/upload_taglist.html', context)
 
 
 @login_required(login_url='common:login')
@@ -193,8 +176,78 @@ def upload_delete(request):
         upload_id = request.POST.get('upload_id', '')
         upload = get_object_or_404(Upload, pk=upload_id)
 
-        print("[UPLOAD_DELETE] " + upload_id)
-        print("[UPLOAD_DELETE] " + upload.tag)
+        print("[UPLOAD_DELETE] upload.id : " + upload_id)
+        print("[UPLOAD_DELETE] upload.tag : " + upload.tag)
+
+        resourcePath = 'C:/projects/djangobook-master/media'
+        print("[UPLOAD_DELETE] file : " + resourcePath + '/' + str(upload.filepath))
+        os.remove(resourcePath + '/' + str(upload.filepath))
+        print("[UPLOAD_DELETE] thumbnail " + resourcePath + '/' + str(upload.filepath))
+        os.remove(resourcePath + '/' + str(upload.filefolder) + '/' + str(upload.id) + '.jpg')
         upload.delete()
 
     return redirect('pybo:upload_list')
+
+
+
+@login_required(login_url='common:login')
+def upload_search_keyword(request):
+    """
+    파일업로드 목록 출력
+    """
+    # 입력 파라미터
+    page = request.GET.get('page', '1')  # 페이지
+    kw = request.GET.get('kw', '')  # 검색어
+
+    # 정렬
+
+    upload_list = Upload.objects.order_by('-create_date')
+
+    tag_list = upload_list
+    distinct_tag_list = []
+
+    for list in tag_list:
+        tags = list.tag.split(',')
+        for tag in tags:
+            if tag not in distinct_tag_list:
+                distinct_tag_list.append(tag)
+
+    distinct_tag_list.sort()
+    #print(distinct_tag_list)
+    #len(distinct_tag_list)
+
+    # 검색
+    if kw:
+        upload_list = upload_list.filter(
+            Q(subject__icontains=kw) |  # 제목검색
+            Q(tag__icontains=kw) |  # 내용검색
+            Q(author__username__icontains=kw)  # 질문 글쓴이검색
+        ).distinct()
+
+    # 페이징처리
+    paginator = Paginator(upload_list, 96)  # 페이지당 10개씩 보여주기
+    page_obj = paginator.get_page(page)
+
+    context = {'upload_list': page_obj, 'page': page, 'kw': kw, 'distinct_tag_list': distinct_tag_list}
+    return render(request, 'pybo/upload_search_keyword.html', context)
+
+
+
+
+@login_required(login_url='common:login')
+def upload_tag_list(request):
+    tag_list = []
+
+
+
+
+
+
+
+    #slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
+
+    # Send a message to #general channel
+    #slack.chat.post_message('#jsw', 'jsw test!')
+
+    context = {'tag_list': tag_list}
+    return render(request, 'pybo/upload_taglist.html', context)

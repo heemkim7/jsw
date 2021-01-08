@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-
+from datetime import datetime
 from ..forms import QuestionForm
 from ..models import Question
 
@@ -18,6 +18,10 @@ def question_create(request):
             question = form.save(commit=False)
             question.author = request.user  # 추가한 속성 author 적용
             question.create_date = timezone.now()
+            upload = datetime.strptime(request.POST.get('upload_target'), "%y/%m/%d")
+            upload = upload.replace(hour=9)
+            question.upload_target = upload
+
             question.save()
             return redirect('pybo:index')
     else:
@@ -32,9 +36,9 @@ def question_modify(request, question_id):
     pybo 질문수정
     """
     question = get_object_or_404(Question, pk=question_id)
-    if request.user != question.author:
-        messages.error(request, '수정권한이 없습니다')
-        return redirect('pybo:detail', question_id=question.id)
+    # if request.user != question.author:
+    #     messages.error(request, '수정권한이 없습니다')
+    #     return redirect('pybo:detail', question_id=question.id)
 
     if request.method == "POST":
         form = QuestionForm(request.POST, instance=question)
@@ -42,6 +46,10 @@ def question_modify(request, question_id):
             question = form.save(commit=False)
             question.author = request.user
             question.modify_date = timezone.now()  # 수정일시 저장
+            upload = datetime.strptime(request.POST.get('upload_target'), "%y/%m/%d")
+            upload = upload.replace(hour=9)
+            question.upload_target = upload
+
             question.save()
             return redirect('pybo:detail', question_id=question.id)
     else:

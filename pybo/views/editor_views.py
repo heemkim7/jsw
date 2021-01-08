@@ -42,8 +42,17 @@ def editor(request):
     #     form = QuestionForm()
 
     qid = request.POST.get('qid', '')
-    print('qid : ' + qid)
+    print('[editor] qid : ' + qid)
     keywords = ''
+    status = ''
+
+    if qid == '':
+        status = "내용"
+    else:
+        question = get_object_or_404(Question, pk=qid)
+        status = question.status
+
+
 
     isFile = os.path.isfile('./static/output/' + 'keyword_'+ qid +'.txt')
 
@@ -52,12 +61,13 @@ def editor(request):
             for line in f.readlines():
                 keywords += line
 
-    print('keywords : ' + keywords)
+    print('[editor] keywords : \n' + keywords)
 
     context = {'qid': request.POST.get('qid', ''),
                'subject': request.POST.get('subject', ''),
                'content': request.POST.get('content', ''),
-               'keyword': keywords}
+               'keyword': keywords,
+               'status': status}
     #print(context)
     return render(request, 'pybo/editor_form.html', context)
 
@@ -69,7 +79,6 @@ def editor_create(request):
     """
     question_id = request.POST.get('qid', '')
     print(question_id)
-
 
     if question_id == '':
         # create
@@ -99,6 +108,7 @@ def editor_modify_download_true(question_id):
     pybo 다운로드 완료
     """
     question = get_object_or_404(Question, pk=question_id)
+    print(question.status)
     print(question.create_date)
     question.download_flag = '1'
     question.save()
@@ -109,7 +119,8 @@ def editor_modify_download_false(question_id):
     pybo 다운로드 완료
     """
     question = get_object_or_404(Question, pk=question_id)
-    print(question.create_date)
+    print('[editor_modify_download_false] status : ' + question.status)
+    print('[editor_modify_download_false] create_date : ' + question.create_date)
     question.download_flag = '0'
     question.save()
     return redirect('pybo:index')
@@ -152,6 +163,11 @@ def editor_convert(request):
 
         if line.find('http') > -1:
             continue
+
+        ## xml 예약문자 처리 ##
+        line = line.replace('&', ' and ')
+        line = line.replace('<', '')
+        line = line.replace('>', '')
 
         word = line.split(' ')
         for i in word:
@@ -379,6 +395,90 @@ def editor_subtitle(request):
 
 
 @login_required(login_url='common:login')
+def editor_media_xml(line_num, question_id, fileId, pathurl):
+    """
+    스크립트 영상 xml로 만들기
+    """
+
+    line_no = line_num
+    question_id = question_id
+    print(line_no)
+    print(question_id)
+
+    lineCnt = 0
+    with open('./static/output/script_'+question_id+'.txt', 'r', encoding="utf-8") as file:
+        for line in file.readlines():
+            line = line.replace('\n', '')
+            lineCnt += 1
+
+    now = datetime.datetime.now()
+    time_for_text = 600
+
+    ## line 1 ##
+    str1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><xmeml version=\"5\">  <sequence id=\"video\">    <name>"
+    name = "영상_layer1_" + now.strftime('%Y%m%d')
+    str3 = "</name>    <duration>"
+    time = str(int(lineCnt) / 2 * time_for_text)
+    str5 = "</duration>    <rate>      <timebase>60</timebase>      <ntsc>false</ntsc>    </rate>    <media>      <video>        <format>          <samplecharacteristics>            <width>1920</width>            <height>1080</height>            <anamorphic>false</anamorphic>            <pixelaspectratio>square</pixelaspectratio>            <fielddominance>none</fielddominance>          </samplecharacteristics>        </format>        <track>"
+    result = str1 + name + str3 + time + str5
+
+
+    ## 반복 ##
+    lineCnt = 0
+    timeCnt = 0
+    with open('./static/output/script_'+question_id+'.txt', 'r', encoding="utf-8") as file:
+        for line in file.readlines():
+            line = line.replace('\n', '')
+
+            if lineCnt % 2 == 0:
+                str6 = "<clipitem><name>"+ fileId + "</name><duration>"+ str(time_for_text) +"</duration><rate><timebase>60</timebase><ntsc>false</ntsc></rate><start>"
+                start_time = str(timeCnt)
+                str8 = "</start><end>"
+                end_time = str(timeCnt + time_for_text)
+                str10 = "</end><in>"
+                # start_time
+                str12 = "</in><out>"
+                # end_time
+                str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+                text = pathurl
+                str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file><sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+
+                result += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
+                timeCnt += time_for_text
+
+            lineCnt += 1
+
+
+    ## 반복 ##
+    str17 = "< / track > < / video > < / media > < / sequence > < / xmeml > "
+
+    result += str17
+
+    writexml = open('./static/output/영상_'+question_id+'_line1.xml', 'w', encoding="utf-8")
+    writexml.write(result)
+    writexml.close()
+
+
+    """
+    파일 다운로드 받기 
+    참고 : https://parkhyeonchae.github.io/2020/04/12/django-project-24/
+    """
+
+    with zipfile.ZipFile('./static/output/영상_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'w', compression=zipfile.ZIP_DEFLATED) as new_zip:
+        new_zip.write('./static/output/영상_' + question_id + '_line1.xml', arcname='line1.xml')
+
+    with open('./static/output/영상_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'rb') as fh:
+        quote_file_url = urllib.parse.quote('영상_'+ question_id + '_' + now.strftime('%Y%m%d')+'.zip')
+        response = HttpResponse(fh.read(), content_type='zip')
+        response['Content-Disposition'] = 'attachment;filename*=UTF-8\'\'%s' % quote_file_url
+        return response
+
+    raise Http404
+
+
+
+
+@login_required(login_url='common:login')
 def editor_keyword(request):
     """
     키워드로 검색 후 다운로드 받아 압축하기
@@ -477,6 +577,28 @@ def editor_keyword_select_download(request):
 
     keywords = keywords.split('\n')
 
+
+
+    ## 영상 xml 만들기 위함 ##
+    lineCnt = 0
+    with open('./static/output/script_' + question_id + '.txt', 'r', encoding="utf-8") as file:
+        for line in file.readlines():
+            line = line.replace('\n', '')
+            lineCnt += 1
+
+    now = datetime.datetime.now()
+    time_for_text = 600
+
+    ## line 1 ##
+    str1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><xmeml version=\"5\">  <sequence id=\"video\">    <name>"
+    name = "영상_layer1_" + now.strftime('%Y%m%d')
+    str3 = "</name>    <duration>"
+    time = str(int(lineCnt) / 2 * time_for_text)
+    str5 = "</duration>    <rate>      <timebase>60</timebase>      <ntsc>false</ntsc>    </rate>    <media>      <video>        <format>          <samplecharacteristics>            <width>1920</width>            <height>1080</height>            <anamorphic>false</anamorphic>            <pixelaspectratio>square</pixelaspectratio>            <fielddominance>none</fielddominance>          </samplecharacteristics>        </format>        <track>"
+    result = str1 + name + str3 + time + str5
+    ## 영상 xml 만들기 위함 ##
+
+
     for keyword in keywords:
         #print('keyword : ' + keyword)
         key = keyword.split('|')
@@ -486,7 +608,7 @@ def editor_keyword_select_download(request):
         download_url = key[1]
 
 
-        if download_url.find('heemkim') > 0:
+        if download_url.find('heemkim.ddns.net:8000/static/') > 0:
             resourcePath = 'C:\YouTube\99. 자료'
             download_url_path = urllib.parse.unquote(download_url)
             download_url_path = download_url_path.replace('http://heemkim.ddns.net:8000/static/resources',resourcePath)
@@ -515,6 +637,59 @@ def editor_keyword_select_download(request):
             os.rename(downloadPath + filename_1 + "." + filename_2,
                     downloadPath + str(line_num) + '_' + str(img_num) + ".mp4")
 
+        elif download_url.find('heemkim.ddns.net:8000/media/') > 0:
+            resourcePath = 'C:\projects\djangobook-master'
+            download_url_path = urllib.parse.unquote(download_url)
+            download_url_path = download_url_path.replace('http://heemkim.ddns.net:8000', resourcePath)
+            print('media local file copy : ' + download_url_path)
+
+            ## 로컬드라이브에서 -> 정해진위치에 파일 복사 ##
+            if os.path.isfile(download_url_path):
+                shutil.copy(download_url_path, downloadPath)
+            else:
+                try:
+                    shutil.copy(download_url_path, downloadPath)
+                except:
+                    continue
+            filename_1 = str(download_url_path).split("/")[-1].split(".")[0]
+            filename_2 = str(download_url_path).split("/")[-1].split(".")[1]
+            print("download_url_path : " + download_url_path)
+            print("filename_1 : " + filename_1)
+            print("filename_2 : " + filename_2)
+
+            # shutil.move(filename_1+"."+filename_2, str(cnt) + '.' + keyword + '_' + str(downloadCnt) + filename_2)
+            ## 파일명 변경 ##
+            os.rename(downloadPath + filename_1 + "." + filename_2,
+                      downloadPath + str(line_num) + '_' + str(img_num) + '.' + filename_2)
+
+
+            # start - 받은 영상에 맞게 xml 생성 #
+            fileId = str(line_num) + '_' + str(img_num) + '.' + filename_2
+            pathurl = './keyword_' + question_id + '/' + str(line_num) + '_' + str(img_num) + '.' + filename_2
+
+            #editor_media_xml(line_num, question_id, fileId, pathurl)
+
+
+
+            ## start - 반복 ##
+            timeCnt = (int(line_num)-1) * time_for_text
+
+            str6 = "<clipitem><name>" + fileId + "</name><duration>" + str(time_for_text) + "</duration><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + str(timeCnt) + "</mediadelay><start>"
+            start_time = str(timeCnt)
+            str8 = "</start><end>"
+            end_time = str(timeCnt + time_for_text)
+            str10 = "</end><in>"
+            # start_time
+            str12 = "</in><out>"
+            # end_time
+            str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+            text = pathurl
+            str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file><sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+
+            result += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
+            ## end- 반복 ##
+
+            # end - 받은 영상에 맞게 xml 생성 #
 
         else:
             print('google file download : ' + download_url)
@@ -546,6 +721,20 @@ def editor_keyword_select_download(request):
                     img = f.read()
                     h.write(img)
 
+    ## 영상 xml 만들기 ##
+    str17 = "</track></video></media></sequence></xmeml>"
+    result += str17
+    writexml = open('./static/output/영상_' + question_id + '_line1.xml', 'w', encoding="utf-8")
+    writexml.write(result)
+    writexml.close()
+    """
+    파일 다운로드 받기 
+    참고 : https://parkhyeonchae.github.io/2020/04/12/django-project-24/
+    """
+    with zipfile.ZipFile('./static/output/영상_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'w',
+                         compression=zipfile.ZIP_DEFLATED) as new_zip:
+        new_zip.write('./static/output/영상_' + question_id + '_line1.xml', arcname='line1.xml')
+    ## 영상 xml 만들기 ##
 
     file_list = os.listdir(downloadPath)
     for list in file_list:
@@ -566,14 +755,14 @@ def editor_keyword_select_download(request):
 
     #raise Http404
 
-    question = get_object_or_404(Question, pk=question_id)
-    #r = send_to_kakao(question.subject)
-
-    #r = get_kakao_friend()
-    #print(r.text)
-
-    #r = send_to_kakao_for_friend(question.subject)
-    #print(r.text)
+    # question = get_object_or_404(Question, pk=question_id)
+    # r = send_to_kakao(question.subject)
+    #
+    # r = get_kakao_friend()
+    # print(r.text)
+    #
+    # r = send_to_kakao_for_friend(question.subject)
+    # print(r.text)
 
     return HttpResponse(json.dumps("success"), content_type="application/json")
 
@@ -1224,6 +1413,7 @@ def send_to_kakao(text):
     }
 
     data = {"template_object": json.dumps(post)}
+    print(data)
     return requests.post(url, headers=header, data=data)
 
 

@@ -1,40 +1,7 @@
-{% extends 'base.html' %}
-{% load pybo_filter %}
+{% extends 'base_nonegnb.html' %}
 {% load static %}
 {% block content %}
 <div class="container-fluid my-3">
-    <h5 class="my-3 border-bottom pb-2">영상 검색</h5>
-    <div class="row justify-content-center my-3">
-        <div class="col-lg-5 col-md-6 col-8 input-group">
-            <input type="text" id="search_input" placeholder="검색어를 입력해주세요." onkeypress="search_media()" class="form-control kw" value="{{ kw|default_if_none:'' }}" autofocus />
-            <div class="input-group-append">
-                <button class="btn btn-outline-secondary" type="button" id="btn_search">검색</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="row justify-content-center my-3" id="distinct_tag_list">
-        <div class="col-lg-8 col-md-8 col-10" id="tag1">
-        {% if distinct_tag_list %}
-        {% for tag in distinct_tag_list %}
-            {% if forloop.counter > 100 %}
-            <a href="/pybo/upload/list?page=1&kw={{ tag }}" class="badge badge-info tag2" style="display:none;">{{ tag }}</a>
-            {% else %}
-            <a href="/pybo/upload/list?page=1&kw={{ tag }}" class="badge badge-info tag1">{{ tag }}</a>&nbsp;
-            {% endif %}
-        {% endfor %}
-        {% endif %}
-
-        </div>
-        <div class="col-lg-8 col-md-8 col-10" id="tag2">
-
-        </div>
-        <div class="col-lg-8 col-md-8 col-10" style="text-align:center;">
-            <button class="badge badge-alert" type="button" id="tag_showall">전체보기</button>
-            <button class="badge badge-alert" type="button" id="tag_hideall" style="display:none;">숨기기</button>
-        </div>
-    </div>
-    <h5 class="border-bottom"></h5>
     <div class="row justify-content-center" id="upload_list">
         {% if upload_list %}
         {% for file in upload_list %}
@@ -45,9 +12,9 @@
             </a>
         </div>-->
         <!--<div class="col-lg-4 col-md-6 col-xl-2 video">-->
-        <div class="col-lg-3 col-md-4 col-6 video" id="tag_{{ file.id }}" tag-id="{{ file.id }}" tag="{{ file.tag }}" style="padding-right: 0px;padding-left: 0px;">
+        <div class="col-lg-3 col-md-4 col-6 video" id="tag_{{ file.id }}" tag-id="{{ file.id }}" tag="{{ file.tag }}" video-url="/media/{{ file.filepath }}" thumb-url="/media/{{ file.filefolder }}/{{ file.id }}.jpg" style="padding-right: 0px;padding-left: 0px;">
             <!--<a href="/media/{{ file.filepath }}" target="_blank"><img src="/static/img/btn_download.png" style="width:15px"></a>-->
-            <a href="/media/{{ file.filepath }}" target="_blank"><img src="/static/img/btn2_download.png" style="width:22px;"></a>
+
 <!--            <a href="#" class="badge badge-primary">
                 {{ file.tag }}
             </a>-->
@@ -57,17 +24,18 @@
                 <input type="text" class="form-control" name="tag" maxlength="200" required="" id="id_tag" data-role="tagsinput" value="{{ file.tag|default_if_none:'' }}">
             </div>-->
             <!--<em class="custom-file-input"><i>{{ file.tag }}</i></em>-->
-            <a href="{% url 'pybo:upload_modify' file.id  %}">
+            <!--<a href="{% url 'pybo:upload_modify' file.id  %}">-->
             <video class="thevideo img-fluid img-thumbnail" poster="/media/{{ file.filefolder }}/{{ file.id }}.jpg" loop preload="none">
                 <source src="/media/{{ file.filepath }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-            </a>
+            <!--</a>-->
         </div>
         {% endfor %}
         {% else %}
         <div class="justify-content-center my-3">
             <h5 class="justify-content-center my-3 pb-2">결과가 없습니다.</h5>
+            <input type="button" class="form-control" id="close_popup" value="닫기">
         </div>
         {% endif %}
 
@@ -112,7 +80,7 @@
     </ul>
     <!-- 페이징처리 끝 -->
 </div>
-<form id="searchForm" method="get" action="{% url 'pybo:upload_list' %}">
+<form id="searchForm" method="get" action="{% url 'pybo:upload_search_keyword' %}">
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
     <input type="hidden" id="page" name="page" value="{{ page }}">
 </form>
@@ -120,6 +88,44 @@
 {% block script %}
 <script type='text/javascript'>
 $(document).ready(function(){
+    // url querystring 가져오기 , 사용법 $.urlParam(param);
+    $.urlParam = function(name){ var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href); if (results==null){ return null; } else{ return results[1] || 0; } }
+
+    $(".video").on('click', function() {
+        var num = this.id;
+        //num = num.replace('tag_','');
+        var videoUrl = $('#'+num).attr('video-url');
+        var thumnUrl = $('#'+num).attr('thumb-url');
+        console.log($('#'+num).attr('video-id'));
+        console.log(this.id);
+        console.log($(opener.document).find('#subject').val());
+        //$(opener.document).find('#search_keyword_1').val(videoUrl);
+
+        console.log($.urlParam('num'));
+        var lineNum = $.urlParam('num');
+        var tr_str = $(opener.document).find('#tr_search_keyword_output_'+lineNum).html();
+        console.log(tr_str);
+        console.log("num : " + lineNum);
+        $(opener.document).find('#tr_search_keyword_output_'+lineNum).html("<td colspan='2'>"
+            +"<video class='thevideo img-fluid img-thumbnail' poster=" + thumnUrl + " loop='' preload='none' style='height:250px;'>"
+            +"<source class='btnImages selected' id='search_thumb_" + lineNum + "_1' src='" + videoUrl + "' type='video/mp4'>"
+            +"</video>"
+            +"</td>");
+
+        var kw = $.urlParam('kw');
+        kw = decodeURI(kw);
+        $(opener.document).find('#tr_search_subtitle_'+lineNum).get(0).scrollIntoView(true);
+        $(opener.document).find('#search_keyword_'+lineNum).val(kw);
+
+        window.close();
+    });
+
+
+    // close popup btn
+    $("#close_popup").on('click', function() {
+        window.close();
+    });
+
     // search btn
     $(".page-link").on('click', function() {
         $("#page").val($(this).data("page"));

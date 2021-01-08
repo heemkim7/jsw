@@ -8,6 +8,7 @@ class Question(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='author_question')
     subject = models.CharField(max_length=200)
     content = models.TextField()
+    status = models.CharField(max_length=200, null=True, blank=True)
     create_date = models.DateTimeField()
     modify_date = models.DateTimeField(null=True, blank=True)
     download_flag = models.CharField(null=True, max_length=10, blank=True)
@@ -41,7 +42,7 @@ class Upload(models.Model):
         ymd_path = datetime.now().strftime('%Y/%m/%d')
         return '/'.join(['upload_file/', ymd_path, filename])
 
-    filepath = models.FileField(upload_to=get_file_path, null=True, blank=True, verbose_name='파일경로')
+    filepath = models.FileField(upload_to=get_file_path, max_length=1000, null=True, blank=True, verbose_name='파일경로')
     filefolder = models.CharField(max_length=1000, null=True, blank=True, verbose_name='파일폴더')
     filename = models.CharField(max_length=255, null=True, blank=True, verbose_name='파일명')
     subject = models.CharField(max_length=200, null=True, verbose_name='제목')
