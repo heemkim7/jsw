@@ -4,8 +4,10 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.utils import timezone
 from datetime import datetime
+from django.http import HttpResponse
+import json
 
-from ..models import Upload
+from ..models import Upload, Keyword
 from pybo.forms import UploadForm
 import os
 
@@ -140,9 +142,9 @@ def upload_modify(request, upload_id):
     파일업로드 상세페이지 수정
     """
     upload = get_object_or_404(Upload, pk=upload_id)
-    print(upload_id)
-    print(upload.tag)
-    print(upload.filepath)
+    print('[upload_modify] upload_id : ' + str(upload_id))
+    print('[upload_modify] upload.tag : ' + str(upload.tag))
+    print('[upload_modify] upload.filepath : ' + str(upload.filepath))
 
     if request.method == "POST":
         form = UploadForm(request.POST, instance=upload)
@@ -176,13 +178,13 @@ def upload_delete(request):
         upload_id = request.POST.get('upload_id', '')
         upload = get_object_or_404(Upload, pk=upload_id)
 
-        print("[UPLOAD_DELETE] upload.id : " + upload_id)
-        print("[UPLOAD_DELETE] upload.tag : " + upload.tag)
+        print("[upload_delete] upload.id : " + str(upload_id))
+        print("[upload_delete] upload.tag : " + str(upload.tag))
 
         resourcePath = 'C:/projects/djangobook-master/media'
-        print("[UPLOAD_DELETE] file : " + resourcePath + '/' + str(upload.filepath))
+        print("[upload_delete] file : " + resourcePath + '/' + str(upload.filepath))
         os.remove(resourcePath + '/' + str(upload.filepath))
-        print("[UPLOAD_DELETE] thumbnail " + resourcePath + '/' + str(upload.filepath))
+        print("[upload_delete] thumbnail : " + resourcePath + '/' + str(upload.filepath))
         os.remove(resourcePath + '/' + str(upload.filefolder) + '/' + str(upload.id) + '.jpg')
         upload.delete()
 
@@ -199,8 +201,23 @@ def upload_search_keyword(request):
     page = request.GET.get('page', '1')  # 페이지
     kw = request.GET.get('kw', '')  # 검색어
 
-    # 정렬
+    ## 키워드를 dict로 불러옴
+    keyword_list = Keyword.objects.order_by('-count')
+    dict = {}
+    for keyword in keyword_list:
+        # print(str(keyword.key) + ' : ' + str(keyword.value))
+        if keyword.value is None:
+            dict[keyword.key] = keyword.key
+        else:
+            dict[keyword.key] = keyword.value
 
+    ## kw가 dict에 없을경우 예외처리
+    try:
+        kw = dict[kw]
+    except KeyError:
+        kw = kw
+
+    ## 영상검색 태그 리스트 뽑기
     upload_list = Upload.objects.order_by('-create_date')
 
     tag_list = upload_list
@@ -235,19 +252,170 @@ def upload_search_keyword(request):
 
 
 @login_required(login_url='common:login')
-def upload_tag_list(request):
+def upload_keyword_batch(request):
     tag_list = []
 
+    from collections import Counter
+    okja = []
+    cnt = 1
+    # 1. 이전 포스트에서 크롤링한 댓글파일을 읽기전용으로 호출함
+    while cnt <= 79:
+        file = open('C:\projects\djangobook-master\static\output/a/1 ('+str(cnt)+').txt', 'r', encoding='utf-8')
+        lines = file.readlines()
+
+        # 2. 변수 okja에 전체댓글을 다시저장
+
+        for line in lines:
+            okja.append(line)
+        file.close()
+        cnt = cnt + 1
+
+    # 3. 트윗터 패키지 안에 konlpy 모듈호출
+    from konlpy.tag import Twitter
+    twitter = Twitter()
+
+    # 4. 각 문장별로 형태소 구분하기
+    sentences_tag = []
+    for sentence in okja:
+        morph = twitter.pos(sentence)
+        sentences_tag.append(morph)
+        print(morph)
+        print('-' * 30)
+
+    print(sentences_tag)
+    print(len(sentences_tag))
+    print('\n' * 3)
+
+    # 5. 명사 혹은 형용사인 품사만 선별해 리스트에 담기
+    noun_adj_list = []
+    for sentence1 in sentences_tag:
+        for word, tag in sentence1:
+            if tag in ['Adjective']:
+            #if tag not in ['Josa', 'Punctuation', 'Foreign', 'Verb']:
+                noun_adj_list.append(word)
+
+    # 6. 선별된 품사별 빈도수 계산 & 상위 빈도 10위 까지 출력
+    count = Counter(noun_adj_list)
+    print(count.most_common(2000))
+
+
+    file = open('C:\projects\djangobook-master\static\output/a/Adjective.txt', 'w', encoding='utf-8')
+    for key, value in count.most_common(2000):
+        file.write(str(key)+'|'+str(value)+'\n')
+
+    file.close()
+
+    from gensim.summarization.summarizer import summarize
 
 
 
-
-
-
-    #slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
-
-    # Send a message to #general channel
-    #slack.chat.post_message('#jsw', 'jsw test!')
 
     context = {'tag_list': tag_list}
-    return render(request, 'pybo/upload_taglist.html', context)
+    return render(request, 'pybo/upload_keyword_list.html', context)
+
+
+
+@login_required(login_url='common:login')
+def upload_keyword_list(request):
+
+    keyword_list = Keyword.objects.order_by('-count')
+
+    context = {'keyword_list': keyword_list}
+    return render(request, 'pybo/upload_keyword_list.html', context)
+
+
+@login_required(login_url='common:login')
+def upload_keyword_value_set(request):
+    from django.core import serializers
+
+    dict = {}
+
+    # 키워드 리스트
+    keyword_list = Keyword.objects.order_by('-count')
+    data = serializers.serialize('json', keyword_list)
+    for keyword in keyword_list:
+        #print(str(keyword.key) + ' : ' + str(keyword.value))
+        dict[keyword.key] = keyword.value
+
+    # 영상 태그 리스트
+    tag_list = Upload.objects.order_by('-create_date')
+    for list in tag_list:
+        tags = list.tag.split(',')
+        for tag in tags:
+            dict[tag] = tag
+
+    sdict = sorted(dict.items(), key = lambda item: len(item[0]), reverse=False)
+
+    sorted_dict = {}
+    for key, value in sdict:
+        #print(str(key))
+        #print(str(value))
+        sorted_dict[key] = value
+
+    sorted_dict = json.dumps(sorted_dict,ensure_ascii=False)
+
+    return HttpResponse(sorted_dict, content_type="application/json")
+
+
+@login_required(login_url='common:login')
+def upload_keyword_create(request):
+    """
+    키워드 등록
+    """
+
+    if request.method == 'POST':
+        keyword_id = request.POST.get('keyword_id', '')
+        key = request.POST.get('key', '')
+        value = request.POST.get('value', '')
+        if keyword_id == '':
+            keyword = Keyword()
+            keyword.count = 0
+            keyword.key = key
+            keyword.value = value
+            keyword.create_date = timezone.now()
+            print("[keyword_create] keyword_id : " + str(keyword_id) + ' | keyword.key : ' + str(
+                key) + ' | keyword.value : ' + str(value))
+            keyword.save()
+            context = {'status': 'create', 'keyword_id': keyword.id}
+            return HttpResponse(json.dumps(context), content_type="application/json")
+
+
+@login_required(login_url='common:login')
+def upload_keyword_modify(request):
+    """
+    키워드 수정
+    """
+
+    if request.method == 'POST':
+        keyword_id = request.POST.get('keyword_id', '')
+        key = request.POST.get('key', '')
+        value = request.POST.get('value', '')
+
+        if keyword_id != '':
+            keyword = get_object_or_404(Keyword, pk=keyword_id)
+            keyword.value = value
+            print("[keyword_modify] keyword_id : " + str(keyword_id) + ' | keyword.key : ' + str(
+                key) + ' | keyword.value : ' + str(value))
+            keyword.save()
+            context = {'status': 'modify', 'keyword_id': keyword_id, 'key':key, 'value':value}
+            return HttpResponse(json.dumps(context), content_type="application/json")
+
+
+
+@login_required(login_url='common:login')
+def upload_keyword_delete(request):
+    """
+    키워드 삭제
+    """
+    from django.http import HttpResponse
+    import json
+
+    if request.method == 'POST':
+        keyword_id = request.POST.get('keyword_id', '')
+        if keyword_id != '':
+            keyword = get_object_or_404(Keyword, pk=keyword_id)
+            print("[keyword_delete] keyword_id : " + str(keyword_id) + ' | ' + str(keyword.key) + ' | ' + str(keyword.value))
+            keyword.delete()
+            context = {'status': 'delete', 'keyword_id': keyword_id}
+            return HttpResponse(json.dumps(context), content_type="application/json")
+

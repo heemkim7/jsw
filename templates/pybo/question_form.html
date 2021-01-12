@@ -41,7 +41,7 @@
         <div class="form-group">
             <label for="upload_target">업로드 날짜</label>
             <div class="input-group date" id="upload_target_picker" data-target-input="nearest">
-            <input type="text" class="form-control datetimepicker-input" data-target="#upload_target_picker" value="" name="upload_target" id="upload_target">
+            <input type="text" class="form-control datetimepicker-input" data-target="#upload_target_picker" name="upload_target" id="upload_target" value="{{ upload_target|date:'y/m/d'|default_if_none:'' }}">
                 <div class="input-group-append" data-target="#upload_target_picker" data-toggle="datetimepicker">
                     <div class="input-group-text">
                     <i class="fa fa-calendar"></i>
@@ -94,7 +94,7 @@ $(document).ready(function(){
     function bytesHandler(obj){
         var text = $(obj).val();
         var output = '';
-        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 btye ), ';
+        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 byte ), ';
         output += '공백 제거 : ' + getTextLength_removeBlank(text)+' ( 권장 3700 )';
         $('p.bytes').text(output);
         //console.log($('textarea#content').val());

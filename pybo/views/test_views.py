@@ -67,7 +67,7 @@ def test(request):
 
 
     context = {'tag_list': tag_list}
-    return render(request, 'pybo/upload_taglist.html', context)
+    return render(request, 'pybo/upload_keyword_list.html', context)
 
 
 # BeautifulSoup 객체 생성
@@ -200,7 +200,7 @@ def test_start(request):
     test_run_google()
 
     context = {'tag_list': tag_list}
-    return render(request, 'pybo/upload_taglist.html', context)
+    return render(request, 'pybo/upload_keyword_list.html', context)
 
 
 @login_required(login_url='common:login')
@@ -215,7 +215,7 @@ def test_end(request):
     test_run_google()
 
     context = {'tag_list': tag_list}
-    return render(request, 'pybo/upload_taglist.html', context)
+    return render(request, 'pybo/upload_keyword_list.html', context)
 
 
 

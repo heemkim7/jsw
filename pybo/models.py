@@ -54,3 +54,11 @@ class Upload(models.Model):
 
     def __str__(self):
         return self.subject
+
+
+class Keyword(models.Model):
+    count = models.IntegerField()
+    key = models.CharField(max_length=100, null=True, blank=True)
+    value = models.CharField(max_length=100, null=True, blank=True)
+    related_keyword = models.CharField(max_length=100, null=True)
+    create_date = models.DateTimeField(null=True)

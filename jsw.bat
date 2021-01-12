@@ -1,1 +1,1 @@
-python c:\projects\djangobook-master\manage.py runserver 192.168.219.100:8000 --settings=config.settings.local --insecure
+python c:\projects\djangobook-master\manage.py runserver 192.168.219.100:8000 --settings=config.settings.local

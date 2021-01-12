@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load pybo_filter %}
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+    <h5 class="my-3 border-bottom pb-2">키워드 관리</h5>
+    <div class="row" style="position: sticky; top: 0; z-index:1000">
+            <div class="custom-file col-lg-6 col-md-6 col-6 my-1">
+                <input type="text" class="form-control" name="tag" maxlength="200" required="" id="key" placeholder="키워드" value="">
+            </div>
+            <div class="custom-file col-lg-6 col-md-6 col-6 my-1">
+                <input type="text" class="form-control" name="tag" maxlength="200" required="" id="value" placeholder="영상 태그" value="">
+            </div>
+
+    </div>
+    <div class="row" style="position: sticky; top: 45px; z-index:1000; justify-content: flex-end;">
+        <div class="custom-file col-lg-6 col-md-6 col-6 my-1" style="text-align: right;">
+                    <button class="btn btn-primary col-5" type="button" id="create">추가</button>
+                    <button class="btn btn-primary col-5" type="button" id="modify" style="display:none">수정</button>
+                    <button class="btn btn-secondary col-5" type="button" id="reset">리셋</button>
+        </div>
+    </div>
+    <h5 class="border-bottom"></h5>
+    <div class="list-group">
+    {% if keyword_list %}
+        <ul class="list-group" id="keywords_list">
+        {% for tag in keyword_list %}
+            <li class="list-group-item" id="{{ tag.id }}">
+                <div class="row">
+                    <div class="col-6">
+                        <a href="javascript:;" class="list-group-item-action modify" id="modify_{{ tag.id }}">{{ tag.key }} : {{ tag.value|default_if_none:tag.key }}</a>
+                    </div>
+                <!-- data-toggle="modal" data-target="#exampleModal" -->
+                    <div class="col-6" style="text-align:right;">
+                        <a href="javascript:;" class="list-group-item-action remove" ><span class="badge badge-primary badge-pill" id="remove_{{ tag.id }}">X</span></a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    </div>
+
+</div>
+<form id="searchForm" method="get" action="{% url 'pybo:upload_list' %}">
+    <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
+    <input type="hidden" id="page" name="page" value="{{ page }}">
+</form>
+<input type="hidden" id="keyword_id" value="">
+{% endblock %}
+{% block script %}
+<script type='text/javascript'>
+$(document).ready(function(){
+    $('#key').focus();
+
+    $(document).on('click',".modify", function() {
+        var num = $(this).attr('id');
+        num = num.replace('modify_','');
+
+        key_val = $(this).text();
+        key = key_val.split(' : ')[0]
+        value = key_val.split(' : ')[1]
+
+        $('#key').val(key);
+        $('#key').attr("readonly",true);
+        $('#value').val(value);
+        $('#create').css('display','none')
+        $('#modify').css('display','')
+        $('#value').focus();
+
+        $('#keyword_id').val(num);
+    });
+
+    $(document).on('click',".remove", function() {
+        console.log($(this).children('span').attr('id'));
+        var num = $(this).children('span').attr('id');
+        num = num.replace('remove_','');
+
+        $.ajax({
+            type:"POST",
+            url: "/pybo/upload/keyword/delete",
+            data: "keyword_id="+num,
+            success: function(data,status){
+                $('#'+num).remove();
+
+            },
+            error: function(error){
+                console.log(error.responseText);
+            }
+        });
+    });
+
+    $("#create").on('click', function() {
+        var key = $('#key').val();
+        var value = $('#value').val();
+
+            $.ajax({
+                type:"POST",
+                url: "/pybo/upload/keyword/create",
+                data: {
+                    keyword_id : '',
+                    key : key,
+                    value : value
+                },
+                success: function(data,status){
+                    html = '';
+                    html += "<li class=\"list-group-item\" id=\"" + data.keyword_id + "\">";
+                    html += "<div class=\"row\"><div class=\"col-6\"><a href=\"javascript:;\" class=\"list-group-item-action\">" + key + " : " + value + "</a>";
+                    html += "<span class=\"badge badge-danger badge-pill\">New</span></div>";
+                    html += "<div class=\"col-6\" style=\"text-align:right;\"><a href=\"javascript:;\" class=\"list-group-item-action remove\"><span class=\"badge badge-primary badge-pill\" id=\"remove_" + data.keyword_id + "\">X</span></a></div></div></li>";
+
+
+                    //$('#keywords_list').prepend(html);
+                    $('#keywords_list').append(html);
+                    $('#'+data.keyword_id).get(0).scrollIntoView(true); // 스크롤 이동
+                    $('#key').focus();
+                },
+                error: function(error){
+                    console.log(error.responseText);
+                }
+            });
+    });
+
+    $("#modify").on('click', function() {
+        var key = $('#key').val();
+        var value = $('#value').val();
+        var keyword_id = $('#keyword_id').val();
+        var text = $('#modify_'+keyword_id).val();
+
+            $.ajax({
+                type:"POST",
+                url: "/pybo/upload/keyword/modify",
+                data: {
+                    keyword_id : keyword_id,
+                    key : key,
+                    value : value
+                },
+                success: function(data,status){
+                    console.log(data);
+                    reset_input();
+                    $('#modify_'+keyword_id).text(data.key + ' : ' + data.value);
+                },
+                error: function(error){
+                    console.log(error.responseText);
+                }
+            });
+    });
+
+
+    $("#reset").on('click', function() {
+        reset_input();
+    });
+
+    function reset_input(){
+        $("#key").val('');
+        $('#key').attr("readonly",false);
+        $('#key').focus();
+        $("#value").val('');
+        $('#create').css('display','')
+        $('#modify').css('display','none')
+    }
+
+    // search btn
+    $(".page-link").on('click', function() {
+        $("#page").val($(this).data("page"));
+        $("#searchForm").submit();
+    });
+
+    $("#btn_search").on('click', function() {
+        $("#kw").val($(".kw").val());
+        $("#page").val(1);  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
+        $("#searchForm").submit();
+    });
+
+    $(".so").on('change', function() {
+        $("#so").val($(this).val());
+        $("#page").val(1);
+        $("#searchForm").submit();
+    });
+
+    $("#tag_showall").on('click', function() {
+        $(".tag2").css('display','');
+        $("#tag_showall").css('display','none');
+        $("#tag_hideall").css('display','');
+    });
+    $("#tag_hideall").on('click', function() {
+        $(".tag2").css('display','none');
+        $("#tag_hideall").css('display','none');
+        $("#tag_showall").css('display','');
+    });
+
+    // video hover autoplay
+    var figure = $(".video").hover( hoverVideo, hideVideo );
+    function hoverVideo(e) {
+        $('video', this).get(0).play();
+    }
+    function hideVideo(e) {
+        $('video', this).get(0).pause();
+    }
+
+
+    // split comma tags
+    function split_comma() {
+        var list_cnt = $("#upload_list").children().length;
+        //alert(list_cnt);
+        //alert(html);
+
+        for(var i=1; i<=list_cnt; i++){
+            var id = $("#upload_list").children('.video').eq(i-1).attr('tag-id');
+            if(id != null){
+                //console.log(i + " : " + id);
+                var html = $('#tag_'+id).html();
+                var tag = $('#tag_'+id).attr('tag');
+                var tagArr = tag.split(',');
+                var prefix = "";
+                //prefix += "<span class='badge badge-success'>V</span> ";
+                //prefix += "<span class='badge badge-warning'>I</span> ";
+                for(var j=0; j<tagArr.length; j++){
+                    prefix += "<a href='/pybo/upload/list?page=1&kw="+tagArr[j]+"' class='badge badge-primary'>"+ tagArr[j] + "</a> ";
+                }
+                $('#tag_'+id).html(prefix+html);
+            }
+        }
+    }
+
+    split_comma();
+});
+</script>
+<script src="{% static 'upload.js' %}"></script>
+<script src="{% static 'js/csrf.js' %}"></script>
+{% endblock %}

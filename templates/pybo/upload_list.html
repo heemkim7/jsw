@@ -6,7 +6,7 @@
     <h5 class="my-3 border-bottom pb-2">영상 검색</h5>
     <div class="row justify-content-center my-3">
         <div class="col-lg-5 col-md-6 col-8 input-group">
-            <input type="text" id="search_input" placeholder="검색어를 입력해주세요." onkeypress="search_media()" class="form-control kw" value="{{ kw|default_if_none:'' }}" autofocus />
+            <input type="text" id="search_input" placeholder="검색어를 입력해주세요." onkeypress="search_media()" class="form-control kw" value="{{ kw|default_if_none:'' }}" />
             <div class="input-group-append">
                 <button class="btn btn-outline-secondary" type="button" id="btn_search">검색</button>
             </div>
@@ -120,6 +120,11 @@
 {% block script %}
 <script type='text/javascript'>
 $(document).ready(function(){
+    // 검색창 커서 제일 뒤에 위치시키기
+    var len = $('#search_input').val().length;
+    $('#search_input').focus();
+    $('#search_input')[0].setSelectionRange(len, len);
+
     // search btn
     $(".page-link").on('click', function() {
         $("#page").val($(this).data("page"));

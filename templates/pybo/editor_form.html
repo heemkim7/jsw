@@ -5,7 +5,11 @@
     <h5 class="my-3 border-bottom pb-2">자막 생성</h5>
     <div class="row">
         <div class="col-md-6" id="content_field">
-            <button type="button" class="btn btn-primary col-md-12" id="save_button">스크립트 저장</button>
+            <div class="row" style="position: sticky; top: 0; z-index:1000">
+                <button type="button" class="btn btn-primary col-md-12 my-1" id="save_button">스크립트 저장</button>
+                <button type="button" class="btn btn-primary col-md-12 my-1" id="next_step">다음 단계로</button>
+            </div>
+
             <form method="post" class="post-form">
                 {% csrf_token %}
                 <!-- 오류표시 Start -->
@@ -32,7 +36,7 @@
                     <p class="bytes">0 bytes</p>
                 </div>
                 <textarea id="keyword" style="display:none">{{ keyword|default_if_none:'' }}</textarea>
-                <div class="form-group">
+                <div class="form-group" style="display:none">
                     <label for="status">상태</label>
                     <input type="hidden" value="{{ status|default_if_none:'' }}" id="select_default">
                     <select class="form-control" name="status" id="status">
@@ -49,29 +53,27 @@
             </form>
         </div>
 
-        <div class="col-md-6" id="subtitle_field" style="width:100%; height:700px; overflow:auto">
-            <button type="button" class="btn btn-primary col-md-12" id="next_step" style="display:none;">다음 단계로</button>
-            <div class="row" id="download_ctrl">
-                <div class="col-md-4 col-4 my-2">
+            <div class="row col-md-12" id="download_ctrl">
+                <div class="col-md-4 col-4 my-1">
                     <button type="button" class="btn btn-primary col-md-12" id="step_back1">뒤로</button>
                 </div>
-                <div class="col-md-4 col-4 my-2">
+                <div class="col-md-4 col-4 my-1">
                     <button type="button" class="btn btn-primary col-md-12" id="save_keyword">키워드 저장</button>
                 </div>
-                <div class="col-md-4 col-4 my-2">
-                    <a href="/pybo/editor/subtitle?line=1&qid={{ qid|default_if_none:'' }}" ><button type="button" class="btn btn-primary col-md-12" id="download_subtitle">자막 다운</button></a>
+                <div class="col-md-4 col-4 my-1">
+                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword">전체 검색</button>
                 </div>
 <!--                <div class="col-md-4 col-4 my-2">
                     <button type="button" class="btn btn-primary col-md-12" id="search_keyword">키워드 검색 후 다운로드</button>
                 </div>-->
-                <div class="col-md-6 col-6 my-2">
-                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword">키워드 검색</button>
+                <div class="col-md-6 col-6 my-1">
+                    <a href="/pybo/editor/subtitle?line=1&qid={{ qid|default_if_none:'' }}" ><button type="button" class="btn btn-primary col-md-12" id="download_subtitle">자막 다운</button></a>
                 </div>
-                <div class="col-md-6 col-6 my-2">
+                <div class="col-md-6 col-6 my-1">
                     <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword_download">선택 영상 다운</button>
                 </div>
             </div>
-            <div class="badge badge-light sticky-top" id="tooltip_1">수정하고 싶은 부분을 더블클릭하세요.</div>
+        <div class="col-md-6" id="subtitle_field" style="width:100%; height:700px; overflow:auto">
             <table class="table">
                 <thead>
                 <tr class="text-center thead-dark">
@@ -124,7 +126,7 @@
         </div>
     </div>
     <div class="row justify-content-center">
-         <div class="alert alert-success alert-dismissible fade show col-md-2 col-6" role="alert" style="display:none;text-align:center;position:fixed;bottom:0;">
+         <div class="alert alert-success alert-dismissible fade show col-md-2 col-6" role="alert" style="display:none;text-align:center;position:fixed;bottom:0;z-index:1100;">
             <strong>저장되었습니다.</strong>
         </div>
     </div>

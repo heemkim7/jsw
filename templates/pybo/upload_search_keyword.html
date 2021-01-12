@@ -2,6 +2,14 @@
 {% load static %}
 {% block content %}
 <div class="container-fluid my-3">
+    <div class="row justify-content-center my-3">
+        <div class="col-lg-5 col-md-6 col-8 input-group">
+            <input type="text" id="search_input" placeholder="검색어를 입력해주세요." onkeypress="search_media()" class="form-control kw" value="{{ kw|default_if_none:'' }}"  />
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="btn_search">검색</button>
+            </div>
+        </div>
+    </div>
     <div class="row justify-content-center" id="upload_list">
         {% if upload_list %}
         {% for file in upload_list %}
@@ -25,10 +33,12 @@
             </div>-->
             <!--<em class="custom-file-input"><i>{{ file.tag }}</i></em>-->
             <!--<a href="{% url 'pybo:upload_modify' file.id  %}">-->
+            <div class="video2" id="{{ file.id }}" tag-id="{{ file.id }}" tag="{{ file.tag }}" video-url="/media/{{ file.filepath }}" thumb-url="/media/{{ file.filefolder }}/{{ file.id }}.jpg" onclick="click_video({{ file.id }})">
             <video class="thevideo img-fluid img-thumbnail" poster="/media/{{ file.filefolder }}/{{ file.id }}.jpg" loop preload="none">
                 <source src="/media/{{ file.filepath }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
+            </div>
             <!--</a>-->
         </div>
         {% endfor %}
@@ -83,42 +93,51 @@
 <form id="searchForm" method="get" action="{% url 'pybo:upload_search_keyword' %}">
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
     <input type="hidden" id="page" name="page" value="{{ page }}">
+    <input type="hidden" id="num" name="num" value="">
 </form>
 {% endblock %}
 {% block script %}
 <script type='text/javascript'>
 $(document).ready(function(){
+    // 검색창 커서 제일 뒤에 위치시키기
+    var len = $('#search_input').val().length;
+    $('#search_input').focus();
+    $('#search_input')[0].setSelectionRange(len, len);
+
     // url querystring 가져오기 , 사용법 $.urlParam(param);
     $.urlParam = function(name){ var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href); if (results==null){ return null; } else{ return results[1] || 0; } }
 
-    $(".video").on('click', function() {
-        var num = this.id;
-        //num = num.replace('tag_','');
-        var videoUrl = $('#'+num).attr('video-url');
-        var thumnUrl = $('#'+num).attr('thumb-url');
-        console.log($('#'+num).attr('video-id'));
-        console.log(this.id);
-        console.log($(opener.document).find('#subject').val());
-        //$(opener.document).find('#search_keyword_1').val(videoUrl);
+    // num 파라미터 유지해주기 위함
+    $('#num').val($.urlParam('num'));
 
-        console.log($.urlParam('num'));
-        var lineNum = $.urlParam('num');
-        var tr_str = $(opener.document).find('#tr_search_keyword_output_'+lineNum).html();
-        console.log(tr_str);
-        console.log("num : " + lineNum);
-        $(opener.document).find('#tr_search_keyword_output_'+lineNum).html("<td colspan='2'>"
-            +"<video class='thevideo img-fluid img-thumbnail' poster=" + thumnUrl + " loop='' preload='none' style='height:250px;'>"
-            +"<source class='btnImages selected' id='search_thumb_" + lineNum + "_1' src='" + videoUrl + "' type='video/mp4'>"
-            +"</video>"
-            +"</td>");
+<!--    $(".video").on('click', function() {-->
+<!--        var num = this.id;-->
+<!--        //num = num.replace('tag_','');-->
+<!--        var videoUrl = $('#'+num).attr('video-url');-->
+<!--        var thumnUrl = $('#'+num).attr('thumb-url');-->
+<!--        console.log($('#'+num).attr('video-id'));-->
+<!--        console.log(this.id);-->
+<!--        console.log($(opener.document).find('#subject').val());-->
+<!--        //$(opener.document).find('#search_keyword_1').val(videoUrl);-->
 
-        var kw = $.urlParam('kw');
-        kw = decodeURI(kw);
-        $(opener.document).find('#tr_search_subtitle_'+lineNum).get(0).scrollIntoView(true);
-        $(opener.document).find('#search_keyword_'+lineNum).val(kw);
+<!--        console.log($.urlParam('num'));-->
+<!--        var lineNum = $.urlParam('num');-->
+<!--        var tr_str = $(opener.document).find('#tr_search_keyword_output_'+lineNum).html();-->
+<!--        console.log(tr_str);-->
+<!--        console.log("num : " + lineNum);-->
+<!--        $(opener.document).find('#tr_search_keyword_output_'+lineNum).html("<td colspan='2'>"-->
+<!--            +"<video class='thevideo img-fluid img-thumbnail' poster=" + thumnUrl + " loop='' preload='none' style='height:250px;'>"-->
+<!--            +"<source class='btnImages selected' id='search_thumb_" + lineNum + "_1' src='" + videoUrl + "' type='video/mp4'>"-->
+<!--            +"</video>"-->
+<!--            +"</td>");-->
 
-        window.close();
-    });
+<!--        var kw = $.urlParam('kw');-->
+<!--        kw = decodeURI(kw);-->
+<!--        $(opener.document).find('#tr_search_subtitle_'+lineNum).get(0).scrollIntoView(true);-->
+<!--        $(opener.document).find('#search_keyword_'+lineNum).val(kw);-->
+
+<!--        window.close();-->
+<!--    });-->
 
 
     // close popup btn
@@ -182,7 +201,7 @@ $(document).ready(function(){
                 //prefix += "<span class='badge badge-success'>V</span> ";
                 //prefix += "<span class='badge badge-warning'>I</span> ";
                 for(var j=0; j<tagArr.length; j++){
-                    prefix += "<a href='/pybo/upload/list?page=1&kw="+tagArr[j]+"' class='badge badge-primary'>"+ tagArr[j] + "</a> ";
+                    prefix += "<a href='/pybo/upload/search/keyword?page=1&kw="+tagArr[j]+"&num="+ $.urlParam('num') +"' class='badge badge-primary'>"+ tagArr[j] + "</a> ";
                 }
                 $('#tag_'+id).html(prefix+html);
             }
@@ -191,6 +210,39 @@ $(document).ready(function(){
 
     split_comma();
 });
+
+// video click function
+function click_video(fild_id){
+        console.log(fild_id);
+        var num = fild_id;
+
+        var videoUrl = $('#'+num).attr('video-url');
+        var thumnUrl = $('#'+num).attr('thumb-url');
+
+        console.log($('#'+num).attr('video-id'));
+        console.log(this.id);
+        console.log($(opener.document).find('#subject').val());
+        console.log($.urlParam('num'));
+
+        var lineNum = $.urlParam('num');
+        var tr_str = $(opener.document).find('#tr_search_keyword_output_'+lineNum).html();
+
+        console.log(tr_str);
+        console.log("num : " + lineNum);
+
+        $(opener.document).find('#tr_search_keyword_output_'+lineNum).html("<td colspan='2'>"
+            +"<video class='thevideo img-fluid img-thumbnail' poster=" + thumnUrl + " loop='' preload='none' style='height:250px;'>"
+            +"<source class='btnImages selected' id='search_thumb_" + lineNum + "_1' src='" + videoUrl + "' type='video/mp4'>"
+            +"</video>"
+            +"</td>");
+
+        var kw = $.urlParam('kw');
+        kw = decodeURI(kw);
+        $(opener.document).find('#tr_search_subtitle_'+lineNum).get(0).scrollIntoView(true);
+        $(opener.document).find('#search_keyword_'+lineNum).val(kw);
+
+        window.close();
+}
 </script>
 <script src="{% static 'upload.js' %}"></script>
 {% endblock %}

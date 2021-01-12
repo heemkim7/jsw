@@ -2,8 +2,31 @@
 $(document).ready(function() {
     // 다운로드 버튼 숨기기
     $('#download_ctrl').css('display','none');
+
     // 상태 select box 기본 선택
     $("select option[value="+$('#select_default').val()+"]").attr("selected","selected");
+
+
+
+    var keyvalue = {}
+    function get_keyword_dict(){
+        $.ajax({
+            type:"GET",
+            url: "/pybo/upload/keyword/dict",
+            success: function(data,status){ //status는 생략해도 됨
+                //console.log(data);
+
+                keyvalue = data
+                //console.log(keyvalue);
+                realtime_Check();
+            },
+            error: function(error){
+                console.log(error.responseText);
+            }
+        });
+    }
+    get_keyword_dict();
+
 
     function realtime_Check(){
         if(document.location.href.indexOf("/pybo/editor") > 0){
@@ -16,6 +39,7 @@ $(document).ready(function() {
             $.ajax({
                 type:"POST",
                 url: "/pybo/editor/convert",
+                async : false,
                 data: {
                         subject : subject,
                         content : text,
@@ -30,35 +54,26 @@ $(document).ready(function() {
                     var res = data.split("\n");
                     var cnt = 1;
                     var subtitle_line = "";
+
                     for(var i in res) {
                         if(i == 0){}
                         else if(i % 2 == 0){
                             var _width = '1200';
-                            var _height = '600';
+                            var _height = '1000';
                             // 팝업을 가운데 위치시키기 위해 아래와 같이 값 구하기
                             var _left = ( window.screen.width/2) - (_width /2);
                             var _top = ( window.screen.height/2) - (_height /2);
                             //console.log(cnt + ":" + subtitle_line);
-                            subtitle_line = subtitle_line.replace(/한국/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"한국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">한국</a>");
-                            subtitle_line = subtitle_line.replace(/대한민국/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"한국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">대한민국</a>");
-                            subtitle_line = subtitle_line.replace(/우리나라/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"한국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">우리나라</a>");
-                            subtitle_line = subtitle_line.replace(/일본/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"일본"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">일본</a>");
-                            subtitle_line = subtitle_line.replace(/아베/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"일본"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">아베</a>");
-                            subtitle_line = subtitle_line.replace(/스가/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"일본"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">스가</a>");
-                            subtitle_line = subtitle_line.replace(/중국/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"중국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">중국</a>");
-                            subtitle_line = subtitle_line.replace(/시진핑/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"중국"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">시진핑</a>");
-                            subtitle_line = subtitle_line.replace(/프랑스/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"프랑스"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">프랑스</a>");
-                            subtitle_line = subtitle_line.replace(/베트남/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"베트남"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">베트남</a>");
-                            subtitle_line = subtitle_line.replace(/CO-19/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"코로나"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">CO-19</a>");
-                            subtitle_line = subtitle_line.replace(/의료/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"의료"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">의료</a>");
-                            subtitle_line = subtitle_line.replace(/의사/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"의사"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">의사</a>");
-                            subtitle_line = subtitle_line.replace(/돈/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">돈</a>");
-                            subtitle_line = subtitle_line.replace(/달러/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">달러</a>");
-                            subtitle_line = subtitle_line.replace(/엔화/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">엔화</a>");
-                            subtitle_line = subtitle_line.replace(/위안화/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"돈"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">위안화</a>");
-                            subtitle_line = subtitle_line.replace(/주식/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"그래프"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">주식</a>");
-                            subtitle_line = subtitle_line.replace(/상승/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"그래프"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">상승</a>");
-                            subtitle_line = subtitle_line.replace(/하락/gi, "<a href='#none' onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+"그래프"+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">하락</a>");
+                            //console.log(keyvalue);
+                            for(var key in keyvalue){
+                                if(subtitle_line.indexOf(key) > -1){
+                                    value = keyvalue[key];
+                                    if(value == null || value == undefined) value = key;
+                                    //console.log(key + ' : ' + value);
+                                    var regEx = new RegExp(key, "gi");
+                                    subtitle_line = subtitle_line.replace(regEx, "<a href='#none' style=\"font-weight: bold;\" onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+key+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">"+key+"</a>");
+                                }
+                            }
 
                             contents += '<tr class=\"text-center subtitle_back\" id=\"tr_search_subtitle_'+ cnt +'\">';
                             contents +=     '<td class=\"subtitle_num\" style=\"width:50px\">'+ cnt + '</td>';
@@ -101,6 +116,17 @@ $(document).ready(function() {
                         //console.log(st[0])
                         //console.log(st[1])
                         $('#search_keyword_'+st[0]).val(st[1]);
+
+                        // 저장된 썸네일, 영상이 있을경우 불러옴
+                        if(st[2] == undefined || st[2] == ''){
+                        }
+                        else{
+                        $('#tr_search_keyword_output_'+st[0]).html("<td colspan='2'>"
+                        +"<video class='thevideo img-fluid img-thumbnail' poster=" + st[2] + " loop='' preload='none' style='height:250px;'>"
+                        +"<source class='btnImages selected' id='search_thumb_" + st[0] + "_1' src='" + st[3] + "' type='video/mp4'>"
+                        +"</video>"
+                        +"</td>");
+                        }
                     }
 
 
@@ -237,15 +263,53 @@ $(document).ready(function() {
                         },
                         success: function(data,status){ //status는 생략해도 됨
                             //alert("스크립트 저장됨");
+                            console.log('/pybo/editor/create 성공');
                             $('.alert').css('display','');
                             $('#qid').val(data.qid);
-                            $('#next_step').css('display','');
+                            //$('#next_step').css('display','');
                             if(data.status == 'create')
                                 window.location.href = '/pybo/' + data.qid;
 
+
+                            var cnt = $('#subtitle_cnt').val();
+                            // 썸네일, 동영상 경로 같이 저장
+                            var keywords = '';
+                            for(var i=1; i<=cnt; i++){
+                                var key = $('#search_keyword_'+i).val()
+                                var src = $('#search_thumb_'+i+'_1').attr('src')
+                                var thumb = $('#search_thumb_'+i+'_1').parent().attr('poster')
+
+
+                                if(key != null && key != undefined && key != ''){
+                                    if(src != undefined){
+                                        keywords += i + '|' + key + '|' + thumb + '|' + src + '\n';
+                                    }
+                                    else{
+                                        keywords += i + '|' + key + '||' + '\n';
+                                    }
+                                }
+                            }
+
+                            console.log(keywords);
+                            $.ajax({
+                                type:"POST",
+                                url: "/pybo/editor/keyword/save",
+                                data: {
+                                    keywords : keywords,
+                                    qid : qid
+                                },
+                                success: function(data,status){ //status는 생략해도 됨
+                                    console.log('/pybo/editor/keyword/save 성공');
+                                },
+                                error: function(error){
+                                    alert("에러")
+                                    console.log(error.responseText);
+                                }
+                            });
+
                             setTimeout("$('.alert').css('display','none');", 2000);
                             $('#next_step').focus();
-                            $('#next_step').get(0).scrollIntoView(true);
+                            //$('#next_step').get(0).scrollIntoView(true);
                         },
                         error: function(error){
                             console.log(error.responseText);
@@ -328,7 +392,7 @@ $(document).ready(function() {
     function bytesHandler(obj){
         var text = $(obj).val();
         var output = '';
-        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 btye ), ';
+        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 byte ), ';
         output += '공백 제거 : ' + getTextLength_removeBlank(text)+' ( 권장 3700 )';
         $('p.bytes').text(output);
         //console.log($('textarea#content').val());
@@ -389,13 +453,13 @@ $(document).ready(function() {
                     success: function(data,status){ //status는 생략해도 됨
                         $('.alert').css('display','');
                         $('#qid').val(data.qid);
-                        $('#next_step').css('display','');
+                        //('#next_step').css('display','');
                         if(data.status == 'create')
                             window.location.href = '/pybo/' + data.qid;
 
                         setTimeout("$('.alert').css('display','none');", 2000);
                         $('#next_step').focus(); // 커서 이동
-                        $('#next_step').get(0).scrollIntoView(true); // 스크롤 이동
+                        //$('#next_step').get(0).scrollIntoView(true); // 스크롤 이동
                     },
                     error: function(error){
                         console.log(error.responseText);
@@ -575,13 +639,31 @@ $(document).ready(function() {
 
 
     $('#save_keyword').click(function(){
+        $('.alert').css('display','');
+        save_keyword();
+        setTimeout("$('.alert').css('display','none');", 2000);
+    });
+
+    function save_keyword(){
         var cnt = $('#subtitle_cnt').val();
+
         var keywords = '';
         for(var i=1; i<=cnt; i++){
             var key = $('#search_keyword_'+i).val()
-            if(key != null && key != undefined && key != '')
-                keywords += i+'|'+key+'\n';
+            var src = $('#search_thumb_'+i+'_1').attr('src')
+            var thumb = $('#search_thumb_'+i+'_1').parent().attr('poster')
+
+            if(key != null && key != undefined && key != ''){
+                if(src != undefined){
+                    keywords += i + '|' + key + '|' + thumb + '|' + src + '\n';
+                }
+                else{
+                    keywords += i + '|' + key + '||' + '\n';
+                }
+            }
         }
+
+
 
         console.log(keywords);
         $.ajax({
@@ -592,17 +674,15 @@ $(document).ready(function() {
                 qid : qid
             },
             success: function(data,status){ //status는 생략해도 됨
-                alert("키워드 저장됨");
+                console.log('/pybo/editor/keyword/save 성공');
             },
             error: function(error){
                 alert("에러")
                 console.log(error.responseText);
             }
         });
-    });
+    }
 
-
-    realtime_Check();
 });
 
 

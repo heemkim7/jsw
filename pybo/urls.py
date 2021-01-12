@@ -34,8 +34,13 @@ urlpatterns = [
     path('upload/list', upload_views.upload_list, name='upload_list'),
     path('upload/modify/<int:upload_id>/', upload_views.upload_modify, name='upload_modify'),
     path('upload/delete/', upload_views.upload_delete, name='upload_delete'),
-    path('upload/tag_list', upload_views.upload_tag_list, name='upload_tag_list'),
     path('upload/search/keyword', upload_views.upload_search_keyword, name='upload_search_keyword'),
+
+    path('upload/keyword/list', upload_views.upload_keyword_list, name='upload_keyword_list'),
+    path('upload/keyword/dict', upload_views.upload_keyword_value_set, name='upload_keyword_value_set'),
+    path('upload/keyword/create', upload_views.upload_keyword_create, name='upload_keyword_create'),
+    path('upload/keyword/modify', upload_views.upload_keyword_modify, name='upload_keyword_modify'),
+    path('upload/keyword/delete', upload_views.upload_keyword_delete, name='upload_keyword_delete'),
 
 
     # news_views.py

@@ -21,7 +21,7 @@
                 <div class="form-group">
                     <textarea class="form-control" name="content"
                               id="content" rows="20" placeholder="내용을 입력하세요.">{{ content|default_if_none:'' }}</textarea>
-                    <p class="bytes">공백 포함 : 0 bytes ( 권장 8000 btye ), 공백 제거 : 0 ( 권장 3700 )</p>
+                    <p class="bytes">공백 포함 : 0 bytes ( 권장 8000 byte ), 공백 제거 : 0 ( 권장 3700 )</p>
                 </div>
             </form>
         </div>
@@ -46,7 +46,7 @@
                 <div class="form-group">
                     <textarea class="form-control" name="content"
                               id="convert_content" rows="20" readonly>{{ content|default_if_none:'' }}</textarea>
-                    <p class="bytes">공백 포함 : 0 bytes ( 권장 8000 btye ), 공백 제거 : 0 ( 권장 3700 )</p>
+                    <p class="bytes">공백 포함 : 0 bytes ( 권장 8000 byte ), 공백 제거 : 0 ( 권장 3700 )</p>
                 </div>
             </form>
         </div>
@@ -132,7 +132,7 @@ $(document).ready(function(){
     function bytesHandler(obj){
         var text = $(obj).val();
         var output = '';
-        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 btye ), ';
+        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 byte ), ';
         output += '공백 제거 : ' + getTextLength_removeBlank(text)+' ( 권장 3700 )';
         $('p.bytes').text(output);
         //console.log($('textarea#content').val());

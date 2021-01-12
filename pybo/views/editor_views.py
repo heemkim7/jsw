@@ -138,9 +138,6 @@ def editor_convert(request):
     #print(content)
     #print("qid : ")
     #print(question_id)
-    context = {'like_count': 1,
-               'message': 2,
-               'nickname': 3}
 
     output2 = ''
     fw = open('./static/output/script_'+question_id+'.txt', 'w', encoding="utf-8")
@@ -416,7 +413,7 @@ def editor_media_xml(line_num, question_id, fileId, pathurl):
 
     ## line 1 ##
     str1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><xmeml version=\"5\">  <sequence id=\"video\">    <name>"
-    name = "영상_layer1_" + now.strftime('%Y%m%d')
+    name = "video_layer1_" + now.strftime('%Y%m%d')
     str3 = "</name>    <duration>"
     time = str(int(lineCnt) / 2 * time_for_text)
     str5 = "</duration>    <rate>      <timebase>60</timebase>      <ntsc>false</ntsc>    </rate>    <media>      <video>        <format>          <samplecharacteristics>            <width>1920</width>            <height>1080</height>            <anamorphic>false</anamorphic>            <pixelaspectratio>square</pixelaspectratio>            <fielddominance>none</fielddominance>          </samplecharacteristics>        </format>        <track>"
@@ -454,7 +451,7 @@ def editor_media_xml(line_num, question_id, fileId, pathurl):
 
     result += str17
 
-    writexml = open('./static/output/영상_'+question_id+'_line1.xml', 'w', encoding="utf-8")
+    writexml = open('./static/output/video_'+question_id+'_line1.xml', 'w', encoding="utf-8")
     writexml.write(result)
     writexml.close()
 
@@ -464,11 +461,11 @@ def editor_media_xml(line_num, question_id, fileId, pathurl):
     참고 : https://parkhyeonchae.github.io/2020/04/12/django-project-24/
     """
 
-    with zipfile.ZipFile('./static/output/영상_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'w', compression=zipfile.ZIP_DEFLATED) as new_zip:
-        new_zip.write('./static/output/영상_' + question_id + '_line1.xml', arcname='line1.xml')
+    with zipfile.ZipFile('./static/output/video_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'w', compression=zipfile.ZIP_DEFLATED) as new_zip:
+        new_zip.write('./static/output/video_' + question_id + '_line1.xml', arcname='line1.xml')
 
-    with open('./static/output/영상_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'rb') as fh:
-        quote_file_url = urllib.parse.quote('영상_'+ question_id + '_' + now.strftime('%Y%m%d')+'.zip')
+    with open('./static/output/video_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'rb') as fh:
+        quote_file_url = urllib.parse.quote('video_'+ question_id + '_' + now.strftime('%Y%m%d')+'.zip')
         response = HttpResponse(fh.read(), content_type='zip')
         response['Content-Disposition'] = 'attachment;filename*=UTF-8\'\'%s' % quote_file_url
         return response
@@ -591,7 +588,7 @@ def editor_keyword_select_download(request):
 
     ## line 1 ##
     str1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><xmeml version=\"5\">  <sequence id=\"video\">    <name>"
-    name = "영상_layer1_" + now.strftime('%Y%m%d')
+    name = "video_layer1_" + now.strftime('%Y%m%d')
     str3 = "</name>    <duration>"
     time = str(int(lineCnt) / 2 * time_for_text)
     str5 = "</duration>    <rate>      <timebase>60</timebase>      <ntsc>false</ntsc>    </rate>    <media>      <video>        <format>          <samplecharacteristics>            <width>1920</width>            <height>1080</height>            <anamorphic>false</anamorphic>            <pixelaspectratio>square</pixelaspectratio>            <fielddominance>none</fielddominance>          </samplecharacteristics>        </format>        <track>"
@@ -724,16 +721,15 @@ def editor_keyword_select_download(request):
     ## 영상 xml 만들기 ##
     str17 = "</track></video></media></sequence></xmeml>"
     result += str17
-    writexml = open('./static/output/영상_' + question_id + '_line1.xml', 'w', encoding="utf-8")
+    writexml = open(downloadPath + '영상_' + question_id + '_line1.xml', 'w', encoding="utf-8")
     writexml.write(result)
     writexml.close()
+
+
     """
     파일 다운로드 받기 
     참고 : https://parkhyeonchae.github.io/2020/04/12/django-project-24/
     """
-    with zipfile.ZipFile('./static/output/영상_' + question_id + '_' + now.strftime('%Y%m%d') + '.zip', 'w',
-                         compression=zipfile.ZIP_DEFLATED) as new_zip:
-        new_zip.write('./static/output/영상_' + question_id + '_line1.xml', arcname='line1.xml')
     ## 영상 xml 만들기 ##
 
     file_list = os.listdir(downloadPath)
@@ -819,7 +815,7 @@ def editor_keyword_save(request):
     keywords = request.POST.get('keywords', '')
     question_id = request.POST.get('qid', '')
     print(keywords)
-    print(question_id)
+    print('[editor_keyword_save] question_id : ' + str(question_id))
 
     with open('./static/output/keyword_' + question_id + '.txt', "w", encoding="utf8") as f:
         f.write(keywords)
