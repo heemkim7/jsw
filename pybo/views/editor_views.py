@@ -24,6 +24,8 @@ from threading import Thread
 from ..forms import QuestionForm
 from ..models import Question
 
+import re
+
 
 @login_required(login_url='common:login')
 def editor(request):
@@ -141,7 +143,6 @@ def editor_convert(request):
 
     output2 = ''
     fw = open('./static/output/script_'+question_id+'.txt', 'w', encoding="utf-8")
-
 
     lineCnt = 0
     charCnt = 0

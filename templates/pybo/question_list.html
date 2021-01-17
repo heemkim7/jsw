@@ -45,6 +45,10 @@
                 <span>[{{ question.status|default_if_none:'' }}]</span>
                 {% elif question.status is none %}
                 <span style="color:blue;font-weight: bold;"></span>
+                {% elif question.status == '영상' %}
+                <span style="color:red;font-weight: bold;">[{{ question.status|default_if_none:'' }}]</span>
+                {% elif question.status == '녹음' %}
+                <span style="color:green;font-weight: bold;">[{{ question.status|default_if_none:'' }}]</span>
                 {% else %}
                 <span style="color:blue;font-weight: bold;">[{{ question.status|default_if_none:'' }}]</span>
                 {% endif %}

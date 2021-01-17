@@ -28,7 +28,7 @@
             <li class="list-group-item" id="{{ tag.id }}">
                 <div class="row">
                     <div class="col-6">
-                        <a href="javascript:;" class="list-group-item-action modify" id="modify_{{ tag.id }}">{{ tag.key }} : {{ tag.value|default_if_none:tag.key }}</a>
+                        <a href="javascript:;" class="list-group-item-action modify" id="modify_{{ tag.id }}">{{ tag.key }} : {{ tag.value }}</a>
                     </div>
                 <!-- data-toggle="modal" data-target="#exampleModal" -->
                     <div class="col-6" style="text-align:right;">
@@ -190,13 +190,13 @@ $(document).ready(function(){
     });
 
     // video hover autoplay
-    var figure = $(".video").hover( hoverVideo, hideVideo );
-    function hoverVideo(e) {
-        $('video', this).get(0).play();
-    }
-    function hideVideo(e) {
-        $('video', this).get(0).pause();
-    }
+<!--    var figure = $(".video").hover( hoverVideo, hideVideo );-->
+<!--    function hoverVideo(e) {-->
+<!--        $('video', this).get(0).play();-->
+<!--    }-->
+<!--    function hideVideo(e) {-->
+<!--        $('video', this).get(0).pause();-->
+<!--    }-->
 
 
     // split comma tags

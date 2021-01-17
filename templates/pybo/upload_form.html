@@ -6,7 +6,7 @@
         {% if form.id %}
         <div class="col-lg-3 col-md-4 col-6 video">
             <a href="/media/{{ form.filepath.value }}" target="_blank">
-            <video class="thevideo" poster="/media/{{ form.filefolder }}/{{ form.id }}.jpg" loop preload="none" style="width:500px">
+            <video class="thevideo" poster="/media/{{ form.filefolder }}/{{ form.id }}.jpg" controls data-play="hover" muted="muted" style="width:500px">
                 <source src="/media/{{ form.filepath.value }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
@@ -49,6 +49,7 @@
                 {% endif %}
             </div>
         </div>
+        <input type="hidden" name="list_referer" value="{{ list_referer }}">
     </form>
 </div>
 <!-- Modal -->
@@ -85,15 +86,14 @@ $(".custom-file-input").on("change", function() {
   $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
 });
 
-var figure = $(".video").hover( hoverVideo, hideVideo );
 
-    function hoverVideo(e) {
-        $('video', this).get(0).play();
-    }
-
-    function hideVideo(e) {
-        $('video', this).get(0).pause();
-    }
+<!--    var figure = $(".video").hover( hoverVideo, hideVideo );-->
+<!--    function hoverVideo(e) {-->
+<!--        $('video', this).get(0).play();-->
+<!--    }-->
+<!--    function hideVideo(e) {-->
+<!--        $('video', this).get(0).pause();-->
+<!--    }-->
 
 
     // 삭제 버튼 동작
@@ -104,4 +104,5 @@ var figure = $(".video").hover( hoverVideo, hideVideo );
 	}
 
 </script>
+<script src="{% static 'js/jquery.hoverplay.js' %}"></script>
 {% endblock %}

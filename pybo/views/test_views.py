@@ -10,7 +10,7 @@ from gensim.summarization.summarizer import summarize
 from slacker import Slacker
 from urllib.parse import quote_plus
 import json
-
+import os
 
 @login_required(login_url='common:login')
 def test(request):
@@ -64,6 +64,53 @@ def test(request):
         slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
         slack.chat.post_message('#jsw', '['+str(news_info.get('title_ko'))+']'+'\n'+str(news_info.get('desc_ko'))+'\n'+str(news_info.get('url')))
 
+
+
+    context = {'tag_list': tag_list}
+    return render(request, 'pybo/upload_keyword_list.html', context)
+
+
+
+@login_required(login_url='common:login')
+def test2(request):
+    tag_list = []
+
+    import wave
+    import contextlib
+    audiofile = './static/output/1.wav'
+    with contextlib.closing(wave.open(audiofile, 'r')) as f:
+        frames = f.getnframes()
+        rate = f.getframerate()
+        length = frames / float(rate)
+        print(length)
+        print(int(length) * 60)
+
+    audiofile = './static/output/2.mp3'
+    from mutagen.mp3 import MP3
+    audio = MP3(audiofile)
+    print(audio.info.length)
+    print(audio.info.length * 60)
+
+
+    import sys
+    import urllib.request
+    client_id = "6ahcwqg90m"
+    client_secret = "lIFCWuoKMWKqUrLKlmmL4RJdcUN3AkccvCBH5aD9"
+    encText = urllib.parse.quote("새해 벽두부터 중국에서는 또 하나의 충격적인 소식이 들려왔습니다.")
+    data = "speaker=jinho&speed=0&text=" + encText;
+    url = "https://naveropenapi.apigw.ntruss.com/voice/v1/tts"
+    request_api = urllib.request.Request(url)
+    request_api.add_header("X-NCP-APIGW-API-KEY-ID", client_id)
+    request_api.add_header("X-NCP-APIGW-API-KEY", client_secret)
+    response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
+    rescode = response.getcode()
+    if (rescode == 200):
+        print("TTS mp3 저장")
+        response_body = response.read()
+        with open('./static/output/mp3/1.mp3', 'wb') as f:
+            f.write(response_body)
+    else:
+        print("Error Code:" + rescode)
 
 
     context = {'tag_list': tag_list}

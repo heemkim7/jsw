@@ -10,6 +10,28 @@
             </div>
         </div>
     </div>
+    <div class="row justify-content-center my-3" id="distinct_tag_list">
+        <div class="col-lg-8 col-md-8 col-10" id="tag1" style="text-align:center;">
+        {% if distinct_tag_list %}
+        {% for tag in distinct_tag_list %}
+            {% if forloop.counter > 0 %}
+            <a href="/pybo/upload/list?page=1&kw={{ tag }}" class="badge badge-info tag2" style="display:none;">{{ tag }}</a>
+            {% else %}
+            <a href="/pybo/upload/list?page=1&kw={{ tag }}" class="badge badge-info tag1">{{ tag }}</a>&nbsp;
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        </div>
+        <div class="col-lg-8 col-md-8 col-10" id="tag2">
+
+        </div>
+        <div class="col-lg-8 col-md-8 col-10" style="text-align:center;">
+            <button class="badge badge-alert" type="button" id="tag_showall">태그 전체보기</button>
+            <button class="badge badge-alert" type="button" id="tag_hideall" style="display:none;">태그 숨기기</button>
+        </div>
+    </div>
+    <h5 class="border-bottom"></h5>
     <div class="row justify-content-center" id="upload_list">
         {% if upload_list %}
         {% for file in upload_list %}
@@ -34,7 +56,7 @@
             <!--<em class="custom-file-input"><i>{{ file.tag }}</i></em>-->
             <!--<a href="{% url 'pybo:upload_modify' file.id  %}">-->
             <div class="video2" id="{{ file.id }}" tag-id="{{ file.id }}" tag="{{ file.tag }}" video-url="/media/{{ file.filepath }}" thumb-url="/media/{{ file.filefolder }}/{{ file.id }}.jpg" onclick="click_video({{ file.id }})">
-            <video class="thevideo img-fluid img-thumbnail" poster="/media/{{ file.filefolder }}/{{ file.id }}.jpg" loop preload="none">
+            <video class="thevideo img-fluid img-thumbnail" poster="/media/{{ file.filefolder }}/{{ file.id }}.jpg" controls data-play="hover" muted="muted">
                 <source src="/media/{{ file.filepath }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
@@ -175,13 +197,13 @@ $(document).ready(function(){
     });
 
     // video hover autoplay
-    var figure = $(".video").hover( hoverVideo, hideVideo );
-    function hoverVideo(e) {
-        $('video', this).get(0).play();
-    }
-    function hideVideo(e) {
-        $('video', this).get(0).pause();
-    }
+<!--    var figure = $(".video").hover( hoverVideo, hideVideo );-->
+<!--    function hoverVideo(e) {-->
+<!--        $('video', this).get(0).play();-->
+<!--    }-->
+<!--    function hideVideo(e) {-->
+<!--        $('video', this).get(0).pause();-->
+<!--    }-->
 
 
     // split comma tags
@@ -245,4 +267,5 @@ function click_video(fild_id){
 }
 </script>
 <script src="{% static 'upload.js' %}"></script>
+<script src="{% static 'js/jquery.hoverplay.js' %}"></script>
 {% endblock %}

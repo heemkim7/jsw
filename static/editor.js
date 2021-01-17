@@ -68,10 +68,12 @@ $(document).ready(function() {
                             for(var key in keyvalue){
                                 if(subtitle_line.indexOf(key) > -1){
                                     value = keyvalue[key];
-                                    if(value == null || value == undefined) value = key;
-                                    //console.log(key + ' : ' + value);
+                                    if(value == null || value == undefined){
+                                    }
+                                    else{
                                     var regEx = new RegExp(key, "gi");
                                     subtitle_line = subtitle_line.replace(regEx, "<a href='#none' style=\"font-weight: bold;\" onclick=\"window.open('/pybo/upload/search/keyword?page=1&kw="+key+"&num="+cnt+"', 'windowPop', 'width="+_width+", height="+_height+", left="+_left+", top="+_top+", resizable = yes, location = no ')\">"+key+"</a>");
+                                    }
                                 }
                             }
 
@@ -129,7 +131,7 @@ $(document).ready(function() {
                         }
                     }
 
-
+/*
                     $('.subtitle_line').click(function(){
                         var keyword = $(this).html();
                         //keyword = keyword.replaceAll("<button type=\"button\" class=\"btn btn-primary col-md-2\" id=\"go_cur\">이동</button>", "");
@@ -166,6 +168,7 @@ $(document).ready(function() {
                             c.select();
                         }
                     });
+*/
 
                     $('.refresh_keyword').click(function(){
 

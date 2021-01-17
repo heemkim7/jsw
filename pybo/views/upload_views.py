@@ -39,7 +39,7 @@ def upload(request):
             print(upload.filepath)
             upload.save()
             makeStillCutImage('media/'+get_path(), upload.filename, upload.id)
-            return redirect('pybo:upload_list')
+            return redirect('pybo:upload')
     else:
         form = UploadForm()
 
@@ -82,6 +82,8 @@ def makeStillCutImage(path, name, id, onlyMainStillCut=False):
                 resizeImage = cv2.resize(frame, (1280, 720))
                 print(path)
                 cv2.imwrite(path + '/' + str(id) + ".jpg", resizeImage)
+                #cv2.imwrite('compress_img1.png', img,  [int(cv2.IMWRITE_PNG_COMPRESSION), 9])
+                #cv2.imwrite('./data/Lena2.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 70])
             else:
                 print(path)
 
@@ -145,6 +147,8 @@ def upload_modify(request, upload_id):
     print('[upload_modify] upload_id : ' + str(upload_id))
     print('[upload_modify] upload.tag : ' + str(upload.tag))
     print('[upload_modify] upload.filepath : ' + str(upload.filepath))
+    print('[upload_modify] request : ' + str(request.META.get('HTTP_REFERER')))
+    print('[upload_modify] list_referer : ' + str(request.POST.get('list_referer')))
 
     if request.method == "POST":
         form = UploadForm(request.POST, instance=upload)
@@ -153,7 +157,8 @@ def upload_modify(request, upload_id):
             upload.author = request.user
             upload.modify_date = timezone.now()  # 수정일시 저장
             upload.save()
-            return redirect('pybo:upload_list')
+            #return redirect('pybo:upload_list')
+            return redirect(request.POST.get('list_referer'))
     else:
         form = UploadForm(instance=upload)
         form.id = upload.id
@@ -163,7 +168,7 @@ def upload_modify(request, upload_id):
         form.modify_date = upload.modify_date
         form.filefolder = upload.filefolder
         form.filename = upload.filename
-    context = {'form': form}
+    context = {'form': form, 'list_referer':request.META.get('HTTP_REFERER') }
 
     return render(request, 'pybo/upload_form.html', context)
 

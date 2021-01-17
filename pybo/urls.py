@@ -48,6 +48,7 @@ urlpatterns = [
 
     # test_views.py
     path('test/', test_views.test, name='test'),
+    path('test2/', test_views.test2, name='test2'),
     path('test/start', test_views.test_start, name='test_start'),
     path('test/end', test_views.test_end, name='test_end'),
 
