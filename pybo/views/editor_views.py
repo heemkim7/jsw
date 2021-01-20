@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.db.models import Q
 import requests
 import json
 import datetime
@@ -211,67 +212,405 @@ def editor_convert(request):
                 lineStr += i + " "
                 output2 += i + " "
 
-    # line_cnt = 0
-    # for line in str(content).split('\n'):
-    #     line_cnt += 1
-    #
-    # lineCnt = 0
-    # charCnt = 0
-    # lineStr = ""
-    # for line in str(content).split('\n'):
-    #     if line.find('{') > -1 and line.find('}') > -1:
-    #         continue
-    #
-    #     if line.find('[') > -1 and line.find(']') > -1:
-    #         continue
-    #
-    #     if line.find('http') > -1:
-    #         continue
-    #
-    #     word = line.split(' ')
-    #     for i in word:
-    #         if i == "":
-    #             continue
-    #
-    #         charCnt += i.__len__()
-    #
-    #         if i.find("/") > -1:
-    #             i = i.replace('/', '')
-    #             lineStr += i
-    #             print(lineCnt, lineStr, end="\n")
-    #             fw.write(lineStr + "\n")
-    #             lineStr = ""
-    #             lineCnt = lineCnt + 1
-    #             charCnt = 0
-    #             continue
-    #         elif charCnt > 20:
-    #             lineStr += i
-    #             print(lineCnt, lineStr, end="\n")
-    #             fw.write(lineStr + "\n")
-    #             lineStr = ""
-    #             lineCnt = lineCnt + 1
-    #             charCnt = 0
-    #         elif i[i.__len__() - 1] == ".":
-    #             lineStr += i
-    #             print(lineCnt, lineStr, end="\n")
-    #             fw.write(lineStr + "\n")
-    #             lineStr = ""
-    #             lineCnt = lineCnt + 1
-    #             charCnt = 0
-    #         else:
-    #             lineStr += i + " "
-
-
     fw.close()
 
-    output = ''
-    with open('./static/output/script_'+question_id+'.txt', 'r', encoding="utf-8") as file:
-        for line in file.readlines():
-            output += line
+    # output = ''
+    # with open('./static/output/script_'+question_id+'.txt', 'r', encoding="utf-8") as file:
+    #     for line in file.readlines():
+    #         output += line
 
     #print("output2 : " + output2)
+
     return HttpResponse(json.dumps(output2), content_type="application/json")
 
+
+@login_required(login_url='common:login')
+def editor_convert2(request):
+    """
+    스크립트 변환
+    """
+    question_id = request.GET.get('qid', '')
+    category = request.GET.get('category', '업무')
+
+    ############################################################
+    from ..models import Upload, Keyword
+    # 키워드 뽑기
+    dict = {}
+    # 키워드 리스트
+    keyword_list = Keyword.objects.order_by('-count')
+    for keyword in keyword_list:
+        # print(str(keyword.key) + ' : ' + str(keyword.value))
+        if keyword.value is not None:
+            dict[keyword.key] = keyword.value
+
+    # 영상 태그 리스트
+    tag_list = Upload.objects.order_by('-create_date')
+    for list in tag_list:
+        tags = list.tag.split(',')
+        for tag in tags:
+            dict[tag] = tag
+
+    sdict = sorted(dict.items(), key=lambda item: len(item[0]), reverse=False)
+
+    sorted_dict = {}
+    for key, value in sdict:
+        # print(str(key))
+        # print(str(value))
+        sorted_dict[key] = value
+
+    # print(sorted_dict)
+    ############################################################
+
+    # 스크립트 라인수 세기
+    lineCnt = 0
+    output = ''
+    with open('./static/output/script_' + question_id + '.txt', 'r', encoding="utf-8") as file:
+        for line in file.readlines():
+            output += line
+            line = line.replace('\n', '')
+            lineCnt += 1
+
+
+    # audio_voice API 호출해 다운로드 받아서 각 mp3 시간 구하기
+    from mutagen.mp3 import MP3
+    client_id = "6ahcwqg90m"
+    client_secret = "lIFCWuoKMWKqUrLKlmmL4RJdcUN3AkccvCBH5aD9"
+    url = "https://naveropenapi.apigw.ntruss.com/voice/v1/tts"
+    request_api = urllib.request.Request(url)
+    request_api.add_header("X-NCP-APIGW-API-KEY-ID", client_id)
+    request_api.add_header("X-NCP-APIGW-API-KEY", client_secret)
+
+    lineCnt_audio = 1
+    lineSum = ''
+    dict_audio_size = {}
+    audio_size_sum = 0
+    with open('./static/output/script_' + question_id + '.txt', 'r', encoding="utf-8") as file:
+        for line in file.readlines():
+            line = line.replace('\n', ' ')
+
+            if lineCnt_audio % 2 == 0:
+                lineSum += line
+                encText = urllib.parse.quote(lineSum)
+
+                # Naver 음성 API 사용 (CSS)
+                # data = "speaker=jinho&speed=0&text=" + encText;
+                # response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
+                # rescode = response.getcode()
+                # if (rescode == 200):
+                #     print("TTS mp3 저장")
+                #     response_body = response.read()
+                #     with open('./static/output/mp3/'+ str(int(lineCnt_audio/2)) + '.mp3', 'wb') as f:
+                #         f.write(response_body)
+                # else:
+                #     print("Error Code:" + rescode)
+
+                audiofile = './static/output/mp3/(' + str(int(lineCnt_audio / 2)) + ').mp3'
+                audio = MP3(audiofile)
+                print(str(int(lineCnt_audio / 2)), lineSum, int(audio.info.length * 60))
+                dict_audio_size[str(int(lineCnt_audio / 2))] = int(audio.info.length * 60)
+                audio_size_sum += int(audio.info.length * 60)
+                lineSum = '' # 두줄단위로 끊어서 저장한 변수 초기화
+            else:
+                lineSum += line
+                if lineCnt_audio == lineCnt:
+                    encText = urllib.parse.quote(lineSum)
+
+                    # Naver 음성 API 사용 (CSS)
+                    # data = "speaker=jinho&speed=0&text=" + encText;
+                    # response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
+                    # rescode = response.getcode()
+                    # if (rescode == 200):
+                    #     print("TTS mp3 저장")
+                    #     response_body = response.read()
+                    #     with open('./static/output/mp3/'+ str(int(lineCnt_audio/2+1)) + '.mp3', 'wb') as f:
+                    #         f.write(response_body)
+                    # else:
+                    #     print("Error Code:" + rescode)
+
+                    audiofile = './static/output/mp3/(' + str(int(lineCnt_audio / 2 + 1)) + ').mp3'
+                    audio = MP3(audiofile)
+                    print(str(int(lineCnt_audio / 2 + 1)), lineSum, int(audio.info.length * 60))
+                    dict_audio_size[str(int(lineCnt_audio / 2 + 1))] = int(audio.info.length * 60)
+                    audio_size_sum += int(audio.info.length * 60)
+
+            lineCnt_audio += 1
+
+
+
+    ############################################################
+
+
+    okja = []
+    # 1. 이전 포스트에서 크롤링한 댓글파일을 읽기전용으로 호출함
+    for line in str(output).split('\n'):
+        okja.append(line)
+
+    # 3. 트윗터 패키지 안에 konlpy 모듈호출
+    from konlpy.tag import Twitter
+    twitter = Twitter()
+
+    # 4. 각 문장별로 형태소 구분하기
+    sentences_tag = []
+    for sentence in okja:
+        morph = twitter.pos(sentence)
+        sentences_tag.append(morph)
+        #print(morph)
+        #print('-' * 30)
+
+    # for sentence in sentences_tag:
+    #     print(sentence)
+    #     print('-' * 30)
+
+    #print(len(sentences_tag))
+    #print('\n' * 3)
+
+    # 5. 명사 혹은 형용사인 품사만 선별해 리스트에 담기
+    noun_adj_list = {}
+
+
+    #print(len(sentences_tag))
+    #print((len(sentences_tag) + 1) / 2)
+
+    cnt = 1
+    word_sum = ''
+    while cnt < (len(sentences_tag)+1):
+        if cnt % 2 == 0:
+            for word, tag in sentences_tag[cnt-1]:
+                if tag in ['Noun', 'Adjective']:
+                    try:
+                        val = sorted_dict[word]
+                        if val is not None:
+                            #print(key, k)
+                            word_sum += val + '|'
+                    except KeyError:
+                        a = 1
+
+            noun_adj_list[str(int(cnt/2))] = word_sum
+            #print(str(int(cnt/2)))
+            #print(cnt, word_sum)
+            word_sum = ''
+        else:
+            for word, tag in sentences_tag[cnt-1]:
+                if tag in ['Noun', 'Adjective']:
+                    try:
+                        val = sorted_dict[word]
+                        if val is not None:
+                            # print(key, k)
+                            word_sum += val + '|'
+                    except KeyError:
+                        a = 1
+            #print(cnt, word_sum)
+
+        cnt = cnt + 1
+
+    ## 라인별 명사 키워드 출력
+    # for key, value in noun_adj_list.items():
+    #     print(key, value)
+
+    default_keyword = category
+
+
+    # 영상 다운로드 , 영상 xml 만들기 #
+
+    downloadPath = './static/keyword/' + question_id + '/'
+    # 폴더가 없을 경우 만들기
+    if not os.path.isdir(downloadPath):
+        os.mkdir(downloadPath)
+
+    # 기존 다운로드 폴더에 있던 파일들 모두 지우기
+    org_file_list = os.listdir(downloadPath)
+    for list in org_file_list:
+        # print(list)
+        os.remove(downloadPath + list)
+
+    ## 영상 xml 만들기 위함 ##
+
+    now = datetime.datetime.now()
+    time_for_text = 600
+    time_sum = audio_size_sum  # 추후 오디오 파일 길이를 모두 합친길이가 되어야함
+
+    ## line 1 ##
+    str1 = "<?xml version=\"1.0\" encoding=\"utf-8\"?><xmeml version=\"5\"><sequence id=\"video\"><name>"
+    name = "video_layer1_" + now.strftime('%Y%m%d')
+    str3 = "</name><duration>"
+    str5 = "</duration><rate><timebase>60</timebase><ntsc>false</ntsc></rate><media><video><format><samplecharacteristics><width>1920</width><height>1080</height><anamorphic>false</anamorphic><pixelaspectratio>square</pixelaspectratio><fielddominance>none</fielddominance></samplecharacteristics></format>"
+    str5 += "<track>"
+    result = str1 + name + str3 + time_sum + str5
+    ## 영상 xml 만들기 위함 ##
+
+    ###############################################
+    result_subtitle_line1 = ''
+    result_subtitle_line2 = ''
+    result_subtitle_bg = ''
+    result_image = ''
+    result_video = ''
+    result_audio_voice = ''
+    result_audio_bg = ''
+
+    for key, value in noun_adj_list.items():
+        pick = ''
+        #print(key, value)
+        if value == '' or value is None:
+            pick = default_keyword
+            #print(key, pick)
+        else:
+            split_value = value.split('|')
+            onepick_list = []
+            for k in split_value:
+                if k != '' and k is not None:
+                    onepick_list.append(k)
+                    #print(key, k)
+            pick = random_pop(onepick_list)
+
+        getUploadListForKeyword = []
+        if pick:
+            getUploadListForKeyword = tag_list.filter(
+                Q(tag__icontains=pick)
+            ).distinct()
+
+        urlpick_list = []
+        resourcePath = 'C:/projects/djangobook-master/media'
+        for list in getUploadListForKeyword:
+            #print(list.id, list.tag, list.filepath)
+            urlpick_list.append(resourcePath + '/' + str(list.filepath))
+
+
+        # 영상 xml 생성 시작 #
+        line_num = key
+        img_num = '1'
+        download_url = random_pop(urlpick_list)
+
+        print(key, pick, download_url)
+
+        if download_url.find('/media/upload_file/') > -1:
+            print(line_num, download_url)
+            #resourcePath = 'C:\projects\djangobook-master'
+            download_url_path = urllib.parse.unquote(download_url)
+            #download_url_path = resourcePath + download_url_path
+            print('media local file copy : ' + download_url_path)
+
+            ## 로컬드라이브에서 -> 정해진위치에 파일 복사 ##
+            if os.path.isfile(download_url_path):
+                shutil.copy(download_url_path, downloadPath)
+            else:
+                try:
+                    shutil.copy(download_url_path, downloadPath)
+                except:
+                    continue
+            filename_1 = str(download_url_path).split("/")[-1].split(".")[0]
+            filename_2 = str(download_url_path).split("/")[-1].split(".")[1]
+            print("download_url_path : " + download_url_path)
+            print("filename_1 : " + filename_1)
+            print("filename_2 : " + filename_2)
+
+            # shutil.move(filename_1+"."+filename_2, str(cnt) + '.' + keyword + '_' + str(downloadCnt) + filename_2)
+            ## 파일명 변경 ##
+            os.rename(downloadPath + filename_1 + "." + filename_2,
+                      downloadPath + str(line_num) + '_' + str(img_num) + '.' + filename_2)
+
+            # 이미지, 영상 해상도 확인 - start #
+            from PIL import Image
+            width = 1920
+            height = 1080
+            try:
+                image1 = Image.open(downloadPath + line_num + '_' + img_num + '.' + filename_2)
+                width, height = image1.size
+                print('image size', width, ',', height)
+            except IOError:
+                import cv2
+                videoObj = cv2.VideoCapture(downloadPath + line_num + '_' + img_num + '.' + filename_2)
+                width = int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                print('video size', width, ',', height)
+
+            c_width = int(1920 / int(width) * 100)
+            c_height = int(1080 / int(height) * 100)
+            max = 0
+            if c_width > c_height:
+                max = c_width
+            else:
+                max = c_height
+            # 이미지, 영상 해상도 확인 - end #
+
+            # start - 받은 영상에 맞게 xml 생성 #
+            fileId = str(line_num) + '_' + str(img_num) + '.' + filename_2
+            pathurl = str(line_num) + '_' + str(img_num) + '.' + filename_2
+
+            # editor_media_xml(line_num, question_id, fileId, pathurl)
+
+            ## start - 반복 ##
+            timeCnt = (int(line_num) - 1) * time_for_text
+
+            str6 = "<clipitem><name>" + fileId + "</name><duration>" + str(
+                time_for_text) + "</duration><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + str(
+                timeCnt) + "</mediadelay><start>"
+            start_time = str(timeCnt)
+            str8 = "</start><end>"
+            end_time = str(timeCnt + time_for_text)
+            str10 = "</end><in>"
+            # start_time
+            str12 = "</in><out>"
+            # end_time
+            str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+            text = pathurl
+            str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
+            str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(
+                max) + "</value></parameter></effect></filter>"
+            str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+
+            result_video += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
+            ## end- 반복 ##
+
+            # end - 받은 영상에 맞게 xml 생성 #
+
+
+    ## 영상 xml 만들기 ##
+
+    result += result_video
+    result += "</track>"
+    result += result_image
+    result += result_subtitle_bg
+    result += result_subtitle_line2
+    result += result_subtitle_line1
+
+    result += "</video>"
+    # 비디오 끝
+
+    # 오디오 시작
+    #result += "<audio><format><samplecharacteristics><depth>16</depth><samplerate>48000</samplerate></samplecharacteristics></format><outputs><group><index>1</index><numchannels>1</numchannels><downmix>0</downmix><channel><index>1</index></channel></group></outputs>"
+    #result += "<track>"
+    # 클립 반복
+    # ~~~~~~~~<clipitem> ~ </clipitem>
+    # 클립 반복
+    #result += "<enabled>TRUE</enabled><locked>FALSE</locked><outputchannelindex>1</outputchannelindex></track>"
+    #result += "</audio>"
+    # 오디오 끝
+
+    result += "</media></sequence></xmeml>"
+    writexml = open(downloadPath + 'video_' + question_id + '_line1.xml', 'w', encoding="utf-8")
+    writexml.write(result)
+    writexml.close()
+
+    """
+    파일 다운로드 받기 
+    참고 : https://parkhyeonchae.github.io/2020/04/12/django-project-24/
+    """
+    ## 영상 xml 만들기 ##
+
+    file_list = os.listdir(downloadPath)
+    # for list in file_list:
+    #     print(list)
+
+    # with zipfile.ZipFile(downloadPath + 'keyword.zip', 'w', compression=zipfile.ZIP_DEFLATED) as new_zip:
+    with zipfile.ZipFile('./static/output/' + 'keyword_' + question_id + '.zip', 'w') as new_zip:
+        for list in file_list:
+            #print(list)
+            new_zip.write(downloadPath + list, arcname=list)
+
+    editor_modify_download_true(question_id)
+
+    noun_adj_list = json.dumps(noun_adj_list,ensure_ascii=False)
+    return HttpResponse(noun_adj_list, content_type="application/json")
 
 
 @login_required(login_url='common:login')
@@ -558,11 +897,11 @@ def editor_keyword_select_download(request):
     키워드로 검색 후 다운로드 받아 압축하기
     """
 
-    keywords = request.POST.get('keywords', '')
+    #keywords = request.POST.get('keywords', '')
     question_id = request.POST.get('qid', '')
 
-    print(keywords)
-    print(question_id)
+    #print(keywords)
+    #print(question_id)
     downloadPath = './static/keyword/' + question_id + '/'
     if not os.path.isdir(downloadPath):
         os.mkdir(downloadPath)
@@ -572,8 +911,6 @@ def editor_keyword_select_download(request):
     for list in org_file_list:
         # print(list)
         os.remove(downloadPath + list)
-
-    keywords = keywords.split('\n')
 
 
 
@@ -597,127 +934,201 @@ def editor_keyword_select_download(request):
     ## 영상 xml 만들기 위함 ##
 
 
-    for keyword in keywords:
-        #print('keyword : ' + keyword)
-        key = keyword.split('|')
-        #print(key)
-        line_num = key[0].split('_')[2]
-        img_num = key[0].split('_')[3]
-        download_url = key[1]
 
+    ###############################################
+    with open('./static/output/keyword_' + question_id + '.txt', 'r', encoding="utf-8") as file:
+        for line in file.readlines():
+            line = line.replace('\n', '')
+            # print(line)
+            key = line.split('|')
 
-        if download_url.find('heemkim.ddns.net:8000/static/') > 0:
-            resourcePath = 'C:\YouTube\99. 자료'
-            download_url_path = urllib.parse.unquote(download_url)
-            download_url_path = download_url_path.replace('http://heemkim.ddns.net:8000/static/resources',resourcePath)
-            download_url_path = download_url_path.replace('.png', '.mp4')
-            print('local file copy : ' + download_url_path)
+            #print("key : ", key)
 
-            ## 로컬드라이브에서 -> 정해진위치에 파일 복사 ##
-            ## mp4를 기본으로 바라보고 없으면 mov ##
+            line_num = key[0]
+            img_num = '1'
+            download_url = key[3]
 
-            if os.path.isfile(download_url_path):
-                shutil.copy(download_url_path, downloadPath)
-            else:
-                try:
-                    download_url_path = download_url_path.replace('.mp4', '.mov')
+            if download_url.find('/media/upload_file/') > -1:
+                download_url = key[3]
+                print(line_num, download_url)
+                resourcePath = 'C:\projects\djangobook-master'
+                download_url_path = urllib.parse.unquote(download_url)
+                download_url_path = resourcePath + download_url_path
+                print('media local file copy : ' + download_url_path)
+
+                ## 로컬드라이브에서 -> 정해진위치에 파일 복사 ##
+                if os.path.isfile(download_url_path):
                     shutil.copy(download_url_path, downloadPath)
-                except:
-                    continue
-            filename_1 = str(download_url_path).split("/")[-1].split(".")[0]
-            filename_2 = str(download_url_path).split("/")[-1].split(".")[1]
-            print("download_url_path : " + download_url_path)
-            print("filename_1 : " + filename_1)
-            print("filename_2 : " + filename_2)
+                else:
+                    try:
+                        shutil.copy(download_url_path, downloadPath)
+                    except:
+                        continue
+                filename_1 = str(download_url_path).split("/")[-1].split(".")[0]
+                filename_2 = str(download_url_path).split("/")[-1].split(".")[1]
+                print("download_url_path : " + download_url_path)
+                print("filename_1 : " + filename_1)
+                print("filename_2 : " + filename_2)
 
-            # shutil.move(filename_1+"."+filename_2, str(cnt) + '.' + keyword + '_' + str(downloadCnt) + filename_2)
-            ## 파일명 변경 ##
-            os.rename(downloadPath + filename_1 + "." + filename_2,
-                    downloadPath + str(line_num) + '_' + str(img_num) + ".mp4")
+                # shutil.move(filename_1+"."+filename_2, str(cnt) + '.' + keyword + '_' + str(downloadCnt) + filename_2)
+                ## 파일명 변경 ##
+                os.rename(downloadPath + filename_1 + "." + filename_2,
+                          downloadPath + str(line_num) + '_' + str(img_num) + '.' + filename_2)
 
-        elif download_url.find('heemkim.ddns.net:8000/media/') > 0:
-            resourcePath = 'C:\projects\djangobook-master'
-            download_url_path = urllib.parse.unquote(download_url)
-            download_url_path = download_url_path.replace('http://heemkim.ddns.net:8000', resourcePath)
-            print('media local file copy : ' + download_url_path)
 
-            ## 로컬드라이브에서 -> 정해진위치에 파일 복사 ##
-            if os.path.isfile(download_url_path):
-                shutil.copy(download_url_path, downloadPath)
-            else:
+                # 이미지, 영상 해상도 확인 - start #
+                from PIL import Image
+                width = 1920
+                height = 1080
                 try:
-                    shutil.copy(download_url_path, downloadPath)
-                except:
-                    continue
-            filename_1 = str(download_url_path).split("/")[-1].split(".")[0]
-            filename_2 = str(download_url_path).split("/")[-1].split(".")[1]
-            print("download_url_path : " + download_url_path)
-            print("filename_1 : " + filename_1)
-            print("filename_2 : " + filename_2)
+                    image1 = Image.open(downloadPath + line_num + '_' + img_num + '.' + filename_2)
+                    width, height = image1.size
+                    print('image size', width, ',', height)
+                except IOError:
+                    import cv2
+                    videoObj = cv2.VideoCapture(downloadPath + line_num + '_' + img_num + '.' + filename_2)
+                    width = int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    height = int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    print('video size', width, ',', height)
 
-            # shutil.move(filename_1+"."+filename_2, str(cnt) + '.' + keyword + '_' + str(downloadCnt) + filename_2)
-            ## 파일명 변경 ##
-            os.rename(downloadPath + filename_1 + "." + filename_2,
-                      downloadPath + str(line_num) + '_' + str(img_num) + '.' + filename_2)
-
-
-            # start - 받은 영상에 맞게 xml 생성 #
-            fileId = str(line_num) + '_' + str(img_num) + '.' + filename_2
-            pathurl = './keyword_' + question_id + '/' + str(line_num) + '_' + str(img_num) + '.' + filename_2
-
-            #editor_media_xml(line_num, question_id, fileId, pathurl)
+                c_width = int(1920 / int(width) * 100)
+                c_height = int(1080 / int(height) * 100)
+                max = 0
+                if c_width > c_height:
+                    max = c_width
+                else:
+                    max = c_height
+                # 이미지, 영상 해상도 확인 - end #
 
 
+                # start - 받은 영상에 맞게 xml 생성 #
+                fileId = str(line_num) + '_' + str(img_num) + '.' + filename_2
+                pathurl = './keyword_' + question_id + '/' + str(line_num) + '_' + str(img_num) + '.' + filename_2
 
-            ## start - 반복 ##
-            timeCnt = (int(line_num)-1) * time_for_text
+                #editor_media_xml(line_num, question_id, fileId, pathurl)
 
-            str6 = "<clipitem><name>" + fileId + "</name><duration>" + str(time_for_text) + "</duration><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + str(timeCnt) + "</mediadelay><start>"
-            start_time = str(timeCnt)
-            str8 = "</start><end>"
-            end_time = str(timeCnt + time_for_text)
-            str10 = "</end><in>"
-            # start_time
-            str12 = "</in><out>"
-            # end_time
-            str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
-            text = pathurl
-            str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file><sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
 
-            result += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
-            ## end- 반복 ##
 
-            # end - 받은 영상에 맞게 xml 생성 #
+                ## start - 반복 ##
+                timeCnt = (int(line_num)-1) * time_for_text
 
-        else:
-            print('google file download : ' + download_url)
+                str6 = "<clipitem><name>" + fileId + "</name><duration>" + str(time_for_text) + "</duration><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + str(timeCnt) + "</mediadelay><start>"
+                start_time = str(timeCnt)
+                str8 = "</start><end>"
+                end_time = str(timeCnt + time_for_text)
+                str10 = "</end><in>"
+                # start_time
+                str12 = "</in><out>"
+                # end_time
+                str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+                text = pathurl
+                str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
+                str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(max) + "</value></parameter></effect></filter>"
+                str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
 
-            url = download_url
-            req = Request(url, headers={
-                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
-                'Accept-Encoding': 'none',
-                'Accept-Language': 'en-US,en;q=0.8',
-                'Connection': 'keep-alive'})
+                result += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
+                ## end- 반복 ##
 
-            # print("[Request URL] : " + url)
+                # end - 받은 영상에 맞게 xml 생성 #
 
-            try:
-                html = urlopen(req)
-            except HTTPError as e:
-                print('HTTPError')
-                continue
-            except URLError as e:
-                print('URLError')
-                continue
+            else:
+                download_url = key[1]
+                print(line_num, download_url)
 
-            googleimgUrlArr = []
-            with html as f:
-                with open(downloadPath + str(line_num) + '_' + str(img_num) + '.' + url[-4:],
-                          'wb') as h:  # w - write b - binary
-                    img = f.read()
-                    h.write(img)
+                img_url = download_url
+                split1 = img_url.split('/')
+                url_filename = split1[-1]
+                filename, filename_2 = url_filename.split('.')
+
+                url = download_url
+                urllib.request.urlretrieve(url, downloadPath + line_num + '_' + img_num + '.' + filename_2)
+
+
+                # 이미지, 영상 해상도 확인 - start #
+                from PIL import Image
+                width = 1920
+                height = 1080
+                try:
+                    image1 = Image.open(downloadPath + line_num + '_' + img_num + '.' + filename_2)
+                    width, height = image1.size
+                    print('image size', width, ',', height)
+                except IOError:
+                    import cv2
+                    videoObj = cv2.VideoCapture(downloadPath + line_num + '_' + img_num + '.' + filename_2)
+                    width = int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    height = int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    print('video size', width, ',', height)
+
+                c_width = int(1920 / int(width) * 100)
+                c_height = int(1080 / int(height) * 100)
+                max = 0
+                if c_width > c_height:
+                    max = c_width
+                else:
+                    max = c_height
+                # 이미지, 영상 해상도 확인 - end #
+
+
+                # start - 받은 영상에 맞게 xml 생성 #
+                fileId = str(line_num) + '_' + str(img_num) + '.' + filename_2
+                pathurl = './keyword_' + question_id + '/' + str(line_num) + '_' + str(img_num) + '.' + filename_2
+
+                ## start - 반복 ##
+                timeCnt = (int(line_num) - 1) * time_for_text
+
+                str6 = "<clipitem><name>" + fileId + "</name><duration>" + str(
+                    time_for_text) + "</duration><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + str(
+                    timeCnt) + "</mediadelay><start>"
+                start_time = str(timeCnt)
+                str8 = "</start><end>"
+                end_time = str(timeCnt + time_for_text)
+                str10 = "</end><in>"
+                # start_time
+                str12 = "</in><out>"
+                # end_time
+                str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+                text = pathurl
+                str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
+                str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(max) + "</value></parameter></effect></filter>"
+                str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+
+                result += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
+                ## end- 반복 ##
+
+                # end - 받은 영상에 맞게 xml 생성 #
+
+
+
+
+
+                # print('google file download : ' + download_url)
+                #
+                # url = download_url
+                # req = Request(url, headers={
+                #     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+                #     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                #     'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+                #     'Accept-Encoding': 'none',
+                #     'Accept-Language': 'en-US,en;q=0.8',
+                #     'Connection': 'keep-alive'})
+                #
+                # # print("[Request URL] : " + url)
+                #
+                # try:
+                #     html = urlopen(req)
+                # except HTTPError as e:
+                #     print('HTTPError')
+                #     continue
+                # except URLError as e:
+                #     print('URLError')
+                #     continue
+                #
+                # googleimgUrlArr = []
+                # with html as f:
+                #     with open(downloadPath + str(line_num) + '_' + str(img_num) + '.' + url[-4:],
+                #               'wb') as h:  # w - write b - binary
+                #         img = f.read()
+                #         h.write(img)
 
     ## 영상 xml 만들기 ##
     str17 = "</track></video></media></sequence></xmeml>"

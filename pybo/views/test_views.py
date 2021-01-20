@@ -11,6 +11,9 @@ from slacker import Slacker
 from urllib.parse import quote_plus
 import json
 import os
+from PIL import Image, ImageDraw, ImageFont
+import random
+from ..models import Upload, Keyword
 
 @login_required(login_url='common:login')
 def test(request):
@@ -82,40 +85,159 @@ def test2(request):
         frames = f.getnframes()
         rate = f.getframerate()
         length = frames / float(rate)
-        print(length)
-        print(int(length) * 60)
+        #print(length)
+        #print(int(length) * 60)
 
-    audiofile = './static/output/2.mp3'
     from mutagen.mp3 import MP3
-    audio = MP3(audiofile)
-    print(audio.info.length)
-    print(audio.info.length * 60)
 
 
     import sys
     import urllib.request
     client_id = "6ahcwqg90m"
     client_secret = "lIFCWuoKMWKqUrLKlmmL4RJdcUN3AkccvCBH5aD9"
-    encText = urllib.parse.quote("새해 벽두부터 중국에서는 또 하나의 충격적인 소식이 들려왔습니다.")
-    data = "speaker=jinho&speed=0&text=" + encText;
     url = "https://naveropenapi.apigw.ntruss.com/voice/v1/tts"
     request_api = urllib.request.Request(url)
     request_api.add_header("X-NCP-APIGW-API-KEY-ID", client_id)
     request_api.add_header("X-NCP-APIGW-API-KEY", client_secret)
-    response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
-    rescode = response.getcode()
-    if (rescode == 200):
-        print("TTS mp3 저장")
-        response_body = response.read()
-        with open('./static/output/mp3/1.mp3', 'wb') as f:
-            f.write(response_body)
-    else:
-        print("Error Code:" + rescode)
 
+
+
+
+
+    # 파일 라인수 세기
+    cnt = 0
+    with open('./static/output/script_156_2.txt', 'r', encoding="utf-8") as file:
+        while True:
+            if file.readline() == '':
+                break
+            cnt += 1
+
+
+    # 파일 읽으면서 2라인씩 붙이기
+    lineCnt = 1
+    lineSum = ''
+    with open('./static/output/script_156_2.txt', 'r', encoding="utf-8") as file:
+        #print(len(file.readlines()))
+        for line in file.readlines():
+            line = line.replace('\n', ' ')
+
+            if lineCnt % 2 == 0:
+                lineSum += line
+                encText = urllib.parse.quote(lineSum)
+
+
+                # Naver 음성 API 사용 (CSS)
+                # data = "speaker=jinho&speed=0&text=" + encText;
+                # response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
+                # rescode = response.getcode()
+                # if (rescode == 200):
+                #     print("TTS mp3 저장")
+                #     response_body = response.read()
+                #     with open('./static/output/mp3/'+ str(int(lineCnt/2)) + '.mp3', 'wb') as f:
+                #         f.write(response_body)
+                # else:
+                #     print("Error Code:" + rescode)
+
+                audiofile = './static/output/mp3/('+ str(int(lineCnt/2)) + ').mp3'
+                audio = MP3(audiofile)
+                print(str(int(lineCnt/2)), lineSum, int(audio.info.length * 60))
+
+                lineSum = ''
+            else:
+                lineSum += line
+                if cnt == lineCnt:
+                    encText = urllib.parse.quote(lineSum)
+
+
+                    # Naver 음성 API 사용 (CSS)
+                    # data = "speaker=jinho&speed=0&text=" + encText;
+                    # response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
+                    # rescode = response.getcode()
+                    # if (rescode == 200):
+                    #     print("TTS mp3 저장")
+                    #     response_body = response.read()
+                    #     with open('./static/output/mp3/'+ str(int(lineCnt/2+1)) + '.mp3', 'wb') as f:
+                    #         f.write(response_body)
+                    # else:
+                    #     print("Error Code:" + rescode)
+
+                    audiofile = './static/output/mp3/(' + str(int(lineCnt / 2 +1)) + ').mp3'
+                    audio = MP3(audiofile)
+                    print(str(int(lineCnt / 2 +1)), lineSum, int(audio.info.length * 60))
+
+            lineCnt += 1
+
+
+
+
+    ####### 키워드 -> 이미지 생성 #########
+    keyword = '도쿄올림픽 취소'
+    fontname = "./static/font/NanumBarunGothicBold.ttf"
+    fontsize = 70
+    text = keyword
+    colorText = "black"
+    colorOutline = "red"
+    colorBackground = "white"
+    font = ImageFont.truetype(fontname, fontsize)
+    width, height = getSize(text, font)
+    #print(width, height)
+    img = Image.new('RGB', (width + 40, height + 40), colorBackground)
+    d = ImageDraw.Draw(img)
+    d.text((20, height / 2 - 20), text, fill=colorText, font=font)
+    d.rectangle((0, 0, width+20, height + 20))  # , outline=colorOutline)
+    img.save('./static/output/mp3/1.png')
+
+
+
+
+
+
+    # pip install pywinauto
+    # pip install pypiwin32
+    # pip install uiautomation
+
+
+    # from pywinauto.application import Application
+    # Run a target application
+    # app = Application().start("notepad.exe")
+    # app = Application().start("C:\Program Files\Adobe\Adobe Premiere Pro 2020\Adobe Premiere Pro.exe")
+    #app.openFCPXML("C:\YouTube\99. 잡식왕/2020_12/20201227 중국백신가짜/영상_오디오샘플2.xml", "C:\YouTube\99. 잡식왕/2020_12/20201227 중국백신가짜/디폴트.prproj")
+
+    # C:\YouTube\99. 잡식왕\2020_12\20201227 중국백신가짜
+    # 영상_오디오샘플2.xml
+    # 디폴트.prproj
+
+    # print(app.windows())
+
+    # Select a menu item
+    # app.UntitledNotepad.menu_select("도움말->메모장 정보")
+    # Click on a button
+    # app.AboutNotepad.OK.click()
+    # Type a text string
+    # app.UntitledNotepad.Edit.type_keys("pywinauto Works!", with_spaces = True)
 
     context = {'tag_list': tag_list}
     return render(request, 'pybo/upload_keyword_list.html', context)
 
+
+def getSize(txt, font):
+    """
+    Font 사이즈 얻기
+    """
+    testImg = Image.new('RGB', (1, 1))
+    testDraw = ImageDraw.Draw(testImg)
+    return testDraw.textsize(txt, font)
+
+def random_pop(data):
+    """
+    랜덤 데이터 뽑기
+    """
+    if data.__len__() > 0:
+        number = random.choice(data)
+        data.remove(number)
+        return number
+    else:
+        return None
 
 # BeautifulSoup 객체 생성
 def get_soup_obj(url):

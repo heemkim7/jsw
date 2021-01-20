@@ -21,6 +21,7 @@ urlpatterns = [
     path('editor/', editor_views.editor, name='editor'),
     path('editor/create', editor_views.editor_create, name='editor_create'),
     path('editor/convert', editor_views.editor_convert, name='editor_convert'),
+    path('editor/convert2', editor_views.editor_convert2, name='editor_convert2'),
     path('editor/subtitle', editor_views.editor_subtitle, name='editor_subtitle'),
     path('editor/media', editor_views.editor_media_xml, name='editor_media_xml'),
     path('editor/keyword', editor_views.editor_keyword, name='editor_keyword'),

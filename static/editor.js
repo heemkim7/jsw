@@ -9,6 +9,7 @@ $(document).ready(function() {
 
 
     var keyvalue = {}
+    var keyvalue2 = {}
     function get_keyword_dict(){
         $.ajax({
             type:"GET",
@@ -18,6 +19,7 @@ $(document).ready(function() {
 
                 keyvalue = data
                 //console.log(keyvalue);
+                //get_keyword_dict2();
                 realtime_Check();
             },
             error: function(error){
@@ -27,6 +29,21 @@ $(document).ready(function() {
     }
     get_keyword_dict();
 
+    function get_keyword_dict2(){
+        $.ajax({
+            type:"GET",
+            url: "/pybo/editor/convert2",
+            success: function(data,status){ //status는 생략해도 됨
+                //console.log(data);
+
+                keyvalue2 = data
+                //console.log(keyvalue);
+            },
+            error: function(error){
+                console.log(error.responseText);
+            }
+        });
+    }
 
     function realtime_Check(){
         if(document.location.href.indexOf("/pybo/editor") > 0){
@@ -76,6 +93,11 @@ $(document).ready(function() {
                                     }
                                 }
                             }
+
+                            //console.log(keyvalue2[i/2]);
+
+
+
 
                             contents += '<tr class=\"text-center subtitle_back\" id=\"tr_search_subtitle_'+ cnt +'\">';
                             contents +=     '<td class=\"subtitle_num\" style=\"width:50px\">'+ cnt + '</td>';
