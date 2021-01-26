@@ -47,6 +47,7 @@ def upload(request):
     return render(request, 'pybo/upload_form.html', context)
 
 
+
 def get_path():
     ymd_path = datetime.now().strftime('%Y/%m/%d')
     return '/'.join(['upload_file', ymd_path])

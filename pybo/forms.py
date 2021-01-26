@@ -1,16 +1,17 @@
 from django import forms
 
-from pybo.models import Question, Answer, Comment, Upload
+from pybo.models import Question, Answer, Comment, Upload, Youtube
 
 
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['subject', 'content', 'status']
+        fields = ['subject', 'content', 'status', 'category']
         labels = {
             'subject': '제목',
             'content': '내용',
             'status': '상태',
+            'category': '카테고리',
         }
 
 
@@ -39,4 +40,16 @@ class UploadForm(forms.ModelForm):
         labels = {
             'tag': 'Tags',
             'filepath': 'File Path',
+        }
+
+
+class YoutubeForm(forms.ModelForm):
+    class Meta:
+        model = Youtube
+        fields = ['subject', 'content', 'status', 'category']
+        labels = {
+            'subject': '제목',
+            'content': '내용',
+            'status': '상태',
+            'category': '카테고리',
         }

@@ -55,15 +55,24 @@
 
                 <a href="{% url 'pybo:detail' question.id %}"> {{ question.subject|truncatechars:42 }}</a>
                 {% if question.download_flag == '1' %}
-                <a href="/static/output/keyword_{{ question.id }}.zip"><img src="/static/img/btn_download.png" style="width:15px"></a>
+                <a href="/static/output/keyword_{{ question.id }}.zip"><img src="/static/img/btn_download.png" style="width:15px;padding-bottom:4px"></a>
+                {% elif question.download_flag == '2' %}
+                <img src="/static/img/btn_loading.gif" style="width:15px">
                 {% endif %}
             </td>
             <td>{{ question.author.username }}</td>  <!-- 글쓴이 추가 -->
             {% if question.upload_target|date:"y/m/d"|default_if_none:'' == today|date:"y/m/d"|default_if_none:'' or question.upload_target|date:"y/m/d"|default_if_none:'' == tomorrow|date:"y/m/d"|default_if_none:'' %}
-            <td style="color:red;">{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}</td>
+            <td style="color:red;">{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
             {% else %}
-            <td>{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}</td>
+            <td>{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
             {% endif %}
+            {% if question.upload_flag == '1' %}
+            <img src="/static/img/check.svg" style="width:15px;padding-bottom:4px">
+            {% else %}
+            <a href="#" data-toggle="modal" data-target="#exampleModal" class="btn_upload" id="upload_{{question.id}}"><img src="/static/img/btn_upload.png" style="width:15px;padding-bottom:4px"></a>
+            {% endif %}
+            </td>
+
 
             <!--{% if question.modify_date is null %}
             <td>{{ question.create_date|date:"y/m/d P" }}</td>
@@ -119,6 +128,38 @@
     <!-- 페이징처리 끝 -->
 
 </div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">파일 업로드</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+        <form method="POST" enctype="multipart/form-data" id="fileUploadForm">
+                {% csrf_token %}
+      <div class="modal-body">
+            <div class="row ml-1 mr-1">
+                <div class="custom-file col-lg-12 col-md-12 col-12">
+                    <input type="file" class="custom-file-input" name="filepath" id="id_filepath">
+                    <label class="custom-file-label" for="id_filepath">파일 선택</label>
+                </div>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btnSubmit">업로드</button>
+        <button class="btn btn-primary" type="button" id="spinner" style="display:none;" disabled>
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          업로드 중...
+        </button>
+      </div>
+            <input type="hidden" id="question_id" name="question_id" value="">
+            </form>
+    </div>
+  </div>
+</div>
 <form id="searchForm" method="get" action="{% url 'index' %}">
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
     <input type="hidden" id="page" name="page" value="{{ page }}">
@@ -144,6 +185,59 @@ $(document).ready(function(){
         $("#page").val(1);
         $("#searchForm").submit();
     });
+
+    $(".btn_upload").on('click', function() {
+        var question_id = this.id;
+        question_id = question_id.replace('upload_','');
+        console.log(this.id);
+        $('#question_id').val(question_id);
+    });
+
+
+    $(".custom-file-input").on("change", function() {
+      var fileName = $(this).val().split("\\").pop();
+      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
+    $("#btnSubmit").click(function (event) {
+        //preventDefault 는 기본으로 정의된 이벤트를 작동하지 못하게 하는 메서드이다. submit을 막음
+        event.preventDefault();
+
+        // Get form
+        var form = $('#fileUploadForm')[0];
+
+	    // Create an FormData object
+        var data = new FormData(form);
+
+	   // disabled the submit button
+        $("#btnSubmit").prop("disabled", true);
+        $("#btnSubmit").css("display", "none");
+        $("#spinner").css("display", "");
+
+        $.ajax({
+            type: "POST",
+            enctype: 'multipart/form-data',
+            url: "/pybo/upload/youtube",
+            data: data,
+            processData: false,
+            contentType: false,
+            cache: false,
+            timeout: 600000,
+            success: function (data) {
+            	alert("업로드를 완료했습니다.");
+                window.location.href = '/';
+            },
+            error: function (e) {
+                console.log("ERROR : ", e);
+                $("#spinner").css("display", "none");
+                $("#btnSubmit").prop("disabled", false);
+                $("#btnSubmit").css("display", "");
+                alert("업로드가 실패했습니다.");
+            }
+        });
+    });
+
+
+
 });
 </script>
 <script src="{% static 'question.js' %}"></script>

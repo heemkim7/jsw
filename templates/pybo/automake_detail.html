@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load pybo_filter %}
+{% block content %}
+<div class="container my-3">
+    <!-- 사용자오류 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+    {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul><li>{{ message.message }}</li></ul>
+    {% endfor %}
+    </div>
+    {% endif %}
+    <h4 class="border-bottom py-2">{{ question.subject }}</h4>
+    <form action="{% url 'pybo:automake_editor' %}" method="post" class="my-3">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+        {% for field in form %}
+            {% if field.errors %}
+            <strong>{{ field.label }}</strong>
+            {{ field.errors }}
+            {% endif %}
+        {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <input type="hidden" name="qid" value="{{ question.id }}">
+            <textarea {% if not user.is_authenticated %}disabled{% endif %}
+              name="subject" id="script_subject" class="form-control" style="display:none">{{ question.subject }}</textarea>
+            <textarea {% if not user.is_authenticated %}disabled{% endif %}
+              name="content" id="script_content" class="form-control" style="display:none">{{ question.content }}</textarea>
+            <input type="hidden" name="category" value="{{ question.category }}"
+        </div>
+        <div class="row justify-content-between">
+        <div class="col-2">
+            <input type="submit" value="자막 생성" class="btn btn-primary">
+        </div>
+
+        <div class="col-4" style="text-align:right;">
+            <a href="{% url 'pybo:automake_modify' question.id  %}"
+               class="btn btn-outline-secondary">수정</a>
+            <a href="#" class="delete btn btn-outline-secondary"
+               data-uri="{% url 'pybo:automake_delete' question.id  %}">삭제</a>
+        </div>
+
+        </div>
+    </form>
+
+    <div class="row my-3">
+<!--        <div class="col-1"> &lt;!&ndash; 추천영역 &ndash;&gt;
+            <div class="bg-light text-center p-3 border font-weight-bolder mb-1">{{question.voter.count}}</div>
+            <a href="#" data-uri="{% url 'pybo:vote_question' question.id  %}"
+               class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
+        </div>-->
+        <div class="col-12"> <!-- 질문영역 -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-text">{{ question.content|mark }}</div>
+                    <div class="d-flex justify-content-end">
+                        {% if question.modify_date %}
+                        <div class="badge badge-light p-2 text-left mx-3">
+                            <div class="mb-2">modified at</div>
+                            <div>{{ question.modify_date }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="badge badge-light p-2 text-left">
+                            <div class="mb-2">{{ question.author.username }}</div>
+                            <div>{{ question.create_date }}</div>
+                        </div>
+                    </div>
+                    {% if request.user == question.author %}
+                    <div class="my-3">
+                        <a href="{% url 'pybo:automake_modify' question.id  %}"
+                           class="btn btn-sm btn-outline-secondary">수정</a>
+                        <a href="#" class="delete btn btn-sm btn-outline-secondary"
+                           data-uri="{% url 'pybo:automake_delete' question.id  %}">삭제</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type='text/javascript'>
+$(document).ready(function(){
+    $(".delete").on('click', function() {
+        if(confirm("정말로 삭제하시겠습니까?")) {
+            location.href = $(this).data('uri');
+        }
+    });
+    $(".recommend").on('click', function() {
+        if(confirm("정말로 추천하시겠습니까?")) {
+            location.href = $(this).data('uri');
+        }
+    });
+});
+</script>
+{% endblock %}

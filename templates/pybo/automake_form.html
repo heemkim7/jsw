@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">스크립트 등록</h5>
+    <form method="post" class="post-form my-3">
+        {% csrf_token %}
+        <!-- 오류표시 Start -->
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+            {% for field in form %}
+                {% if field.errors %}
+                <strong>{{ field.label }}</strong>
+                {{ field.errors }}
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endif %}
+        <!-- 오류표시 End -->
+        <div class="form-group">
+            <label for="subject">제목</label>
+            <input type="text" class="form-control" name="subject" id="subject"
+                   value="{{ form.subject.value|default_if_none:'' }}">
+        </div>
+        <div class="form-group">
+            <label for="content">내용</label>
+            <textarea class="form-control" name="content"
+                      id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+            <p class="bytes">0 bytes</p>
+        </div>
+        <div class="form-group">
+            <label for="category">영상 카테고리</label>
+            <input type="hidden" value="{{ form.category.value|default_if_none:'' }}" id="category_default">
+            <select class="form-control" name="category" id="category">
+              <option value="한국">한국</option>
+              <option value="중국">중국</option>
+              <option value="일본">일본</option>
+              <option value="미국">미국</option>
+              <option value="사업">비즈니스/사업</option>
+              <option value="무역">기업/무역</option>
+              <option value="돈">금융/돈</option>
+              <option value="폰">뉴스/스마트폰</option>
+              <option value="자동차">자동차</option>
+                <option value="군사">군사</option>
+                <option value="기술">IT/기술</option>
+                <option value="연구">과학/연구/실험</option>
+                <option value="의학">의학/의료</option>
+                <option value="축구">축구</option>
+                <option value="바다">바다</option>
+                <option value="하늘">하늘</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+<script type='text/javascript'>
+$(document).ready(function(){
+    $(function(){
+        $('textarea#content').keyup(function(){
+            bytesHandler(this);
+            realtime_Check();
+        });
+    });
+
+    $(function () {
+        $('#upload_target_picker').datetimepicker({ format: 'YY/MM/DD'});
+    });
+
+    $("select option[value="+$('#category_default').val()+"]").attr("selected","selected");
+    $("select option[value="+$('#select_default').val()+"]").attr("selected","selected");
+
+    function getTextLength(str) {
+        var len = 0;
+
+        for (var i = 0; i < str.length; i++) {
+            if (escape(str.charAt(i)).length == 6) {
+                len++;
+            }
+            len++;
+        }
+        return len;
+    }
+
+    function getTextLength_removeBlank(str) {
+        var len = 0;
+
+        str = str.replace(/ /g,"");
+        return str.length;
+    }
+
+    function bytesHandler(obj){
+        var text = $(obj).val();
+        var output = '';
+        output += '공백 포함 : ' + getTextLength(text)+' bytes ( 권장 8000 byte ), ';
+        output += '공백 제거 : ' + getTextLength_removeBlank(text)+' ( 권장 3700 )';
+        $('p.bytes').text(output);
+        //console.log($('textarea#content').val());
+    }
+});
+</script>
+{% endblock %}

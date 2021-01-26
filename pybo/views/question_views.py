@@ -37,6 +37,7 @@ def question_create(request):
     return render(request, 'pybo/question_form.html', context)
 
 
+
 @login_required(login_url='common:login')
 def question_modify(request, question_id):
     """

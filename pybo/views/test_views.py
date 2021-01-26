@@ -14,6 +14,14 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 import random
 from ..models import Upload, Keyword
+import http.client
+import httplib2
+import os
+import random
+import sys
+import time
+import subprocess
+
 
 @login_required(login_url='common:login')
 def test(request):
@@ -64,7 +72,7 @@ def test(request):
 
     # 3번에 걸쳐 각 뉴스의 요약 결과를 전송합니다
     for idx, news_info in enumerate(news_list10):
-        slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
+        slack = Slacker('xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0')
         slack.chat.post_message('#jsw', '['+str(news_info.get('title_ko'))+']'+'\n'+str(news_info.get('desc_ko'))+'\n'+str(news_info.get('url')))
 
 
@@ -78,18 +86,20 @@ def test(request):
 def test2(request):
     tag_list = []
 
-    import wave
-    import contextlib
-    audiofile = './static/output/1.wav'
-    with contextlib.closing(wave.open(audiofile, 'r')) as f:
-        frames = f.getnframes()
-        rate = f.getframerate()
-        length = frames / float(rate)
+
+    # wave 파일 사이즈 가져오기
+    # import wave
+    # import contextlib
+    # audiofile = './static/output/1.wav'
+    # with contextlib.closing(wave.open(audiofile, 'r')) as f:
+    #     frames = f.getnframes()
+    #     rate = f.getframerate()
+    #     length = frames / float(rate)
         #print(length)
         #print(int(length) * 60)
 
-    from mutagen.mp3 import MP3
 
+    from mutagen.mp3 import MP3
 
     import sys
     import urllib.request
@@ -99,9 +109,6 @@ def test2(request):
     request_api = urllib.request.Request(url)
     request_api.add_header("X-NCP-APIGW-API-KEY-ID", client_id)
     request_api.add_header("X-NCP-APIGW-API-KEY", client_secret)
-
-
-
 
 
     # 파일 라인수 세기
@@ -138,9 +145,9 @@ def test2(request):
                 # else:
                 #     print("Error Code:" + rescode)
 
-                audiofile = './static/output/mp3/('+ str(int(lineCnt/2)) + ').mp3'
-                audio = MP3(audiofile)
-                print(str(int(lineCnt/2)), lineSum, int(audio.info.length * 60))
+                # audiofile = './static/output/mp3/('+ str(int(lineCnt/2)) + ').mp3'
+                # audio = MP3(audiofile)
+                # print(str(int(lineCnt/2)), lineSum, int(audio.info.length * 60))
 
                 lineSum = ''
             else:
@@ -161,9 +168,9 @@ def test2(request):
                     # else:
                     #     print("Error Code:" + rescode)
 
-                    audiofile = './static/output/mp3/(' + str(int(lineCnt / 2 +1)) + ').mp3'
-                    audio = MP3(audiofile)
-                    print(str(int(lineCnt / 2 +1)), lineSum, int(audio.info.length * 60))
+                    # audiofile = './static/output/mp3/(' + str(int(lineCnt / 2 +1)) + ').mp3'
+                    # audio = MP3(audiofile)
+                    # print(str(int(lineCnt / 2 +1)), lineSum, int(audio.info.length * 60))
 
             lineCnt += 1
 
@@ -189,35 +196,255 @@ def test2(request):
 
 
 
+    ####### 키워드 -> 이미지 생성 #########
+    keyword = '도쿄올림픽 취소'
+    fontname = "./static/font/NanumBarunGothicBold.ttf"
+    fontsize = 70
+    text = keyword
+    colorText = "black"
+    colorOutline = "red"
+    colorBackground = "white"
+    font = ImageFont.truetype(fontname, fontsize)
+    width, height = getSize(text, font)
+    #print(width, height)
+    img = Image.new('RGB', (width + 40, height + 40), colorBackground)
+    d = ImageDraw.Draw(img)
+    d.text((20, height / 2 - 20), text, fill=colorText, font=font)
+    d.rectangle((0, 0, width+20, height + 20))  # , outline=colorOutline)
+    img.save('./static/output/mp3/1.png')
+
+
+    ####### 썸네일 자동생성 #########
+    Image.open("./youtube/2/thumb_bg.png")
+    keyword1 = '중국의 김치공정을 박살낼'
+    keyword2 = '확실한 증거가 발견된 상황'
+    keyword3 = '한국 잘못 건드린 중국'
+    keyword4 = '국제적 망신살만 뻗쳤다'
+    target_image = Image.open('./youtube/2/thumb_bg.png')  # 일단 기본배경폼 이미지를 open 합니다.
+    fontsFolder = "./static/font/"  # 글자로 쓸 폰트 경로
+    selectedFont = ImageFont.truetype(os.path.join(fontsFolder, 'NanumBarunGothicBold.ttf'), 150)  # 폰트경로과 사이즈를 설정해줍니다.
+    draw = ImageDraw.Draw(target_image)
+    draw.text((20, height / 2 - 20), keyword1, fill = "yellow", font = selectedFont, align = 'center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
+
+    draw.text((20, height / 2 - 20), keyword2, fill="yellow", font=selectedFont, align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
+    target_image.save('./static/output/mp3/2.png')  # 편집된 이미지를 저장합니다.
 
 
 
-    # pip install pywinauto
-    # pip install pypiwin32
-    # pip install uiautomation
 
 
-    # from pywinauto.application import Application
-    # Run a target application
-    # app = Application().start("notepad.exe")
-    # app = Application().start("C:\Program Files\Adobe\Adobe Premiere Pro 2020\Adobe Premiere Pro.exe")
-    #app.openFCPXML("C:\YouTube\99. 잡식왕/2020_12/20201227 중국백신가짜/영상_오디오샘플2.xml", "C:\YouTube\99. 잡식왕/2020_12/20201227 중국백신가짜/디폴트.prproj")
 
-    # C:\YouTube\99. 잡식왕\2020_12\20201227 중국백신가짜
-    # 영상_오디오샘플2.xml
-    # 디폴트.prproj
 
-    # print(app.windows())
+    # 프리미어프로 -> 영상 인코딩하기
+    #run_video_encoding()
 
-    # Select a menu item
-    # app.UntitledNotepad.menu_select("도움말->메모장 정보")
-    # Click on a button
-    # app.AboutNotepad.OK.click()
-    # Type a text string
-    # app.UntitledNotepad.Edit.type_keys("pywinauto Works!", with_spaces = True)
+    # run your program and collect the string output
+    cmd = "python upload_video.py --file=\"./youtube/test.mp4\" --title=\"업로드 테스트 타이틀2\" --description=\"디스크립션2\""
+    cmd += " --keywords=\"뉴스,지식,한국,중국,일본,미국,아베,스가,시진핑,바이든,문재인\" --category=\"25\" --privacyStatus=\"private\""
+    cmd += " --thumbnail=\""+ "./youtube/test.jpg" + "\""
+    #out_str = subprocess.check_output(cmd, shell=True)
+    #print(out_str)
+
+    # run your program and collect the string output
+    cmd = "python upload_thumbnail.py --file=\"./youtube/test.jpg\" --video-id=\"UlFuwJ-CDw8\""
+    #out_str = subprocess.check_output(cmd, shell=True)
+    #print(out_str)
+
+
+
+
+
+
+
+    # 현재 창 정보 알아오기
+    # import ctypes
+    # lib = ctypes.windll.LoadLibrary('user32.dll')
+    # handle = lib.GetForegroundWindow()  # 활성화된 윈도우의 핸들얻음
+    # buffer = ctypes.create_unicode_buffer(255)  # 타이틀을 저장할 버퍼
+    # lib.GetWindowTextW(handle, buffer, ctypes.sizeof(buffer))  # 버퍼에 타이틀 저장
+    # print(buffer.value)  # 버퍼출력
+    # rect = ctypes.wintypes.RECT()
+    # ff = ctypes.windll.user32.GetWindowRect(handle, ctypes.pointer(rect))
+    # print(rect.left,rect.top,rect.right,rect.bottom)
+    # print(ff)
+
+
+
+    ################################################################################
+
 
     context = {'tag_list': tag_list}
     return render(request, 'pybo/upload_keyword_list.html', context)
+
+
+def run_video_encoding():
+    import pyautogui
+
+    pyautogui.position()
+    # 사용 예시
+    x, y = pyautogui.position()
+    print("x={0},y={1}".format(x, y))
+
+    pyautogui.hotkey('win', 'd')
+    pyautogui.moveTo(2511, 36, 1)
+    pyautogui.click(clicks=2)
+
+
+    time.sleep(15)
+
+    pyautogui.hotkey('ctrl', 'i')
+
+    time.sleep(5)
+
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+
+    pyautogui.press('enter')
+    time.sleep(1)
+    pyautogui.typewrite('C:/projects/djangobook-master/static/keyword/162 ')
+    time.sleep(1)
+
+    pyautogui.press('enter')
+
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+
+    pyautogui.press('pagedown')
+    pyautogui.press('pagedown')
+    pyautogui.press('pagedown')
+    pyautogui.press('pagedown')
+    pyautogui.press('pagedown')
+    pyautogui.press('pagedown')
+    pyautogui.press('pagedown')
+
+    time.sleep(1)
+    pyautogui.press('enter')
+    time.sleep(60)
+
+    pyautogui.moveTo(106, 828, 1)
+    pyautogui.click()
+    time.sleep(1)
+
+    pyautogui.typewrite('video_layer')
+    time.sleep(1)
+
+    pyautogui.moveTo(115, 902, 1)
+    pyautogui.click(clicks=2)
+    time.sleep(5)
+
+    pyautogui.hotkey('ctrl', 'm')
+    time.sleep(5)
+
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+
+    pyautogui.press('space')
+    time.sleep(5)
+
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+
+    pyautogui.press('enter')
+    time.sleep(5)
+
+    pyautogui.typewrite('C:/projects/djangobook-master/static/keyword/162')
+    time.sleep(1)
+
+    pyautogui.press('enter')
+    time.sleep(5)
+    pyautogui.hotkey('alt', 's')
+    time.sleep(5)
+
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+    pyautogui.press('tab')
+    time.sleep(1)
+
+    pyautogui.press('space')
+    time.sleep(300)
+
+    pyautogui.moveTo(2533, 9, 1)
+    pyautogui.click()
+    time.sleep(1)
+    pyautogui.moveTo(1323, 726, 1)
+    pyautogui.click()
+    time.sleep(5)
 
 
 def getSize(txt, font):
@@ -547,7 +774,7 @@ def test_run_google():
 
         # 3번에 걸쳐 각 뉴스의 요약 결과를 전송합니다
         for idx, news_info in enumerate(news_list10):
-            slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
+            slack = Slacker('xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0')
             slack.chat.post_message('#jsw', '[' + str(news_info.get('title')) + ']' + '\n' + str(news_info.get('url')))
 
         time.sleep(60)

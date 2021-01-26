@@ -37,6 +37,29 @@
                 </div>
                 <textarea id="keyword" style="display:none">{{ keyword|default_if_none:'' }}</textarea>
                 <div class="form-group" style="display:none">
+                    <label for="category">영상 카테고리</label>
+                    <input type="hidden" value="{{ category|default_if_none:'' }}" id="category_default">
+                    <select class="form-control" name="category" id="category">
+                      <option value="한국">한국</option>
+                      <option value="중국">중국</option>
+                      <option value="일본">일본</option>
+                      <option value="미국">미국</option>
+                        <option value="중동">중동</option>
+                      <option value="사업">비즈니스/사업</option>
+                      <option value="무역">기업/무역</option>
+                      <option value="돈">금융/돈</option>
+                      <option value="폰">뉴스/스마트폰</option>
+                      <option value="자동차">자동차</option>
+                        <option value="군사">군사</option>
+                        <option value="기술">IT/기술</option>
+                        <option value="연구">과학/연구/실험</option>
+                        <option value="의학">의학/의료</option>
+                        <option value="축구">축구</option>
+                        <option value="바다">바다</option>
+                        <option value="하늘">하늘</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display:none">
                     <label for="status">상태</label>
                     <input type="hidden" value="{{ status|default_if_none:'' }}" id="select_default">
                     <select class="form-control" name="status" id="status">
@@ -66,11 +89,14 @@
 <!--                <div class="col-md-4 col-4 my-2">
                     <button type="button" class="btn btn-primary col-md-12" id="search_keyword">키워드 검색 후 다운로드</button>
                 </div>-->
-                <div class="col-md-6 col-6 my-1">
+                <div class="col-md-4 col-4 my-1">
                     <a href="/pybo/editor/subtitle?line=1&qid={{ qid|default_if_none:'' }}" ><button type="button" class="btn btn-primary col-md-12" id="download_subtitle">자막 다운</button></a>
                 </div>
-                <div class="col-md-6 col-6 my-1">
-                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword_download">선택 영상 다운</button>
+                <div class="col-md-4 col-4 my-1">
+                    <button type="button" class="btn btn-primary col-md-12" id="only_search_keyword_download">선택 다운로드</button>
+                </div>
+                <div class="col-md-4 col-4 my-1">
+                    <button type="button" class="btn btn-primary col-md-12" id="automake_download">AI 자동완성</button>
                 </div>
             </div>
         <div class="col-md-6" id="subtitle_field" style="width:100%; height:700px; overflow:auto">
