@@ -38,6 +38,7 @@ def upload(request):
             print(upload.filename)
             print(upload.filepath)
             upload.save()
+            #makeStillCutVideo('media/'+get_path(), upload.filename)
             makeStillCutImage('media/'+get_path(), upload.filename, upload.id)
             return redirect('pybo:upload')
     else:
@@ -51,6 +52,38 @@ def upload(request):
 def get_path():
     ymd_path = datetime.now().strftime('%Y/%m/%d')
     return '/'.join(['upload_file', ymd_path])
+
+
+def makeStillCutVideo(path, name):
+
+    cap = cv2.VideoCapture(path+'/'+name)
+
+    # 재생할 파일의 넓이와 높이
+    # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    width = 640
+    height = 360
+
+    #print("재생할 파일 넓이, 높이 : %d, %d" % (width, height))
+
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter(path+'/P360_'+name, fourcc, 30.0, (int(width), int(height)))
+
+    while (cap.isOpened()):
+        ret, frame = cap.read()
+
+        if ret == False:
+            break;
+
+        frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_AREA)
+        out.write(frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
 
 
 def makeStillCutImage(path, name, id, onlyMainStillCut=False):
@@ -80,7 +113,8 @@ def makeStillCutImage(path, name, id, onlyMainStillCut=False):
         if frameId % multiplier < 1:
             # cv2.resize(img, dsize, fx, fy, interpolation)
             if frameCount == 1:
-                resizeImage = cv2.resize(frame, (1280, 720))
+                #resizeImage = cv2.resize(frame, (1280, 720))
+                resizeImage = cv2.resize(frame, (320, 180), interpolation=cv2.INTER_AREA)
                 print(path)
                 cv2.imwrite(path + '/' + str(id) + ".jpg", resizeImage)
                 #cv2.imwrite('compress_img1.png', img,  [int(cv2.IMWRITE_PNG_COMPRESSION), 9])

@@ -2,6 +2,8 @@
 *.pyc
 __pycache__
 logs
+pybo/views/kakao.py
+pybo/views/slack.py
 static/keyword
 static/output
 static/keyword_2

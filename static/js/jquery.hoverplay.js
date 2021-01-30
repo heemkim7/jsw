@@ -18,6 +18,7 @@
 				video.controls = false;
 				video.loop = true;
 				el.on('mouseover', function() {
+                    //$(this).children().eq(0).attr('src', $(this).children().eq(1).val());
 					var timeout = el.data('hoverPlayTimeout');
 					if (!timeout) {
 						timeout = setTimeout(function() {

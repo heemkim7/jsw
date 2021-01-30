@@ -1641,10 +1641,14 @@ def editor_keyword_select_download(request):
                 download_url = key[1]
                 print(line_num, download_url)
 
+                if download_url.startswith('http') is False:
+                    continue
+
                 img_url = download_url
                 split1 = img_url.split('/')
                 url_filename = split1[-1]
-                filename, filename_2 = url_filename.split('.')
+                split2 = url_filename.split('.')
+                filename, filename_2 = split2[-2], split2[-1]
 
                 url = download_url
                 urllib.request.urlretrieve(url, downloadPath + line_num + '_' + img_num + '.' + filename_2)
@@ -1769,14 +1773,6 @@ def editor_keyword_select_download(request):
 
     #raise Http404
 
-    # question = get_object_or_404(Question, pk=question_id)
-    # r = send_to_kakao(question.subject)
-    #
-    # r = get_kakao_friend()
-    # print(r.text)
-    #
-    # r = send_to_kakao_for_friend(question.subject)
-    # print(r.text)
 
     return HttpResponse(json.dumps("success"), content_type="application/json")
 
@@ -2409,59 +2405,3 @@ def searchFile(cnt, keyword, question_id):
     return M
 
     print('Image Crawling is done.')
-
-
-
-
-KAKAO_TOKEN = "9cFyITmgIVxuqTCU4ltvJQqTU4XXEs_uTbAVbgopyV4AAAF1iZM_OQ"
-def send_to_kakao(text):
-    header = {"Authorization": 'Bearer ' + KAKAO_TOKEN}
-    url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
-    post = {
-        "object_type": "text",
-        "text": text,
-        "link": {
-            "web_url": "https://developers.kakao.com",
-            "mobile_web_url": "https://developers.kakao.com"
-        },
-    }
-
-    data = {"template_object": json.dumps(post)}
-    print(data)
-    return requests.post(url, headers=header, data=data)
-
-
-def send_to_kakao_for_friend(text):
-    header = {
-        "Authorization": 'Bearer ' + KAKAO_TOKEN
-    }
-    url = "https://kapi.kakao.com/v1/api/talk/friends/message/default/send"
-    post = {
-        "object_type": "feed",
-        "content": {
-            "title": "디저트 사진",
-            "description": "아메리카노, 빵, 케익",
-            "image_url": "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
-            "image_width": 640,
-            "image_height": 640,
-            "link": {
-            "web_url": "http://www.daum.net",
-            "mobile_web_url": "http://m.daum.net",
-            "android_execution_params": "contentId=100",
-            "ios_execution_params": "contentId=100"
-            }
-        },
-    }
-
-    data = {"template_object": json.dumps(post), "receiver_uuids":  "[\"y_PK8sr-zPzQ49Lk0Ojc6Nn1wfjB9sf_jQ\"]"}
-    return requests.post(url, headers=header, data=data)
-
-
-def get_kakao_friend():
-    header = {
-        "Authorization": 'Bearer ' + KAKAO_TOKEN
-    }
-
-    url = "https://kapi.kakao.com/v1/api/talk/friends?friend_order=favorite&limit=100&order=asc"
-
-    return requests.get(url, headers=header)

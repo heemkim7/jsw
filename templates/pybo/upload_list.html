@@ -59,7 +59,8 @@
             <!--<em class="custom-file-input"><i>{{ file.tag }}</i></em>-->
             <a href="{% url 'pybo:upload_modify' file.id  %}">
             <video class="thevideo img-fluid img-thumbnail" poster="/media/{{ file.filefolder }}/{{ file.id }}.jpg" controls data-play="hover" muted="muted">
-                <source src="/media/{{ file.filepath }}" type="video/mp4">
+                <source src="/media/{{ file.filefolder }}/P360_{{ file.filename }}" type="video/mp4" id="video_source_{{ file.id }}">
+<!--                <input type="hidden" value="/media/{{ file.filefolder }}/P360_{{ file.filename }}" id="video_hidden_{{ file.id }}">-->
                 Your browser does not support the video tag.
             </video>
             </a>

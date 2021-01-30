@@ -27,6 +27,8 @@ class Youtube(models.Model):
     content = models.TextField()
     thumbnail_text = models.TextField(null=True)
     thumbnail_url = models.CharField(max_length=1000, null=True, blank=True)
+    thumbnail_bg = models.CharField(max_length=1000, null=True, blank=True)
+    video_id = models.CharField(max_length=100, null=True, blank=True)
     category = models.CharField(max_length=200, null=True, blank=True)
     status = models.CharField(max_length=200, null=True, blank=True)
     create_date = models.DateTimeField()

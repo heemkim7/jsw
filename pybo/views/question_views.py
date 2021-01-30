@@ -6,7 +6,7 @@ from datetime import timedelta
 from datetime import datetime
 from ..forms import QuestionForm
 from ..models import Question
-
+from ..views import slack
 
 @login_required(login_url='common:login')
 def question_create(request):
@@ -30,6 +30,8 @@ def question_create(request):
             question.create_date = timezone.now()
             question.upload_target = upload
             question.save()
+            slack.send_slack('[question_create] ' + question.subject + ' ' + str(question.create_date))
+            slack.send_slack('[question_create] ' + 'http://heemkim.ddns.net:8000/pybo/' + str(question.id))
             return redirect('pybo:index')
     else:
         form = QuestionForm()

@@ -25,9 +25,8 @@ from datetime import timedelta
 
 from ..forms import YoutubeForm
 from ..models import Youtube
-
-from slacker import Slacker
-
+from ..views import slack
+from ..views import kakao
 
 
 
@@ -87,7 +86,7 @@ def automake_create(request):
             question.create_date = timezone.now()
             question.upload_target = upload
             question.save()
-            send_slack('[automake_create] ' + question.subject + ' ' + str(question.create_date))
+            slack.send_slack('[automake_create] ' + question.subject + ' ' + str(question.create_date))
             return redirect('pybo:automake')
     else:
         form = YoutubeForm()
@@ -116,6 +115,9 @@ def automake_editor(request):
     keywords = ''
     status = ''
     category = request.POST.get('category', '폰')
+    thumbnail_text = ''
+    thumbnail_url = ''
+    thumbnail_bg = ''
 
     if qid == '':
         status = "내용"
@@ -123,6 +125,10 @@ def automake_editor(request):
         question = get_object_or_404(Youtube, pk=qid)
         status = question.status
         category = question.category
+        thumbnail_text = question.thumbnail_text
+        thumbnail_url = question.thumbnail_url
+        thumbnail_bg = question.thumbnail_bg
+        video_id = question.video_id
 
 
     outputPath = './static/output_2/'
@@ -140,7 +146,12 @@ def automake_editor(request):
                'content': request.POST.get('content', ''),
                'keyword': keywords,
                'status': status,
-               'category': category}
+               'category': category,
+               'thumbnail_text': thumbnail_text,
+               'thumbnail_url': thumbnail_url,
+               'thumbnail_bg': thumbnail_bg,
+               'video_id': video_id
+               }
     #print(context)
     return render(request, 'pybo/automake_editor.html', context)
 
@@ -163,6 +174,11 @@ def automake_save(request):
     """
     question_id = request.POST.get('qid', '')
     print(question_id)
+    thumbnail_text = request.POST.get('thumbnail_text', '')
+    print(thumbnail_text)
+    thumbnail_bg = request.POST.get('thumbnail_bg', '')
+    print(thumbnail_bg)
+    thumbnail_url = '/static/output_2/thumb_'+question_id+'.png'
 
     if question_id == '':
         # create
@@ -181,6 +197,9 @@ def automake_save(request):
         if form.is_valid():
             question = form.save(commit=False)
             question.modify_date = timezone.now()  # 수정일시 저장
+            question.thumbnail_text = thumbnail_text
+            question.thumbnail_url = thumbnail_url
+            question.thumbnail_bg = thumbnail_bg
             question.save()
             context = {'status': 'modify', 'qid': question.id}
             return HttpResponse(json.dumps(context), content_type="application/json")
@@ -188,7 +207,7 @@ def automake_save(request):
 @login_required(login_url='common:login')
 def automake_modify(request, question_id):
     """
-    pybo 질문수정
+    스크립트 수정
     """
     question = get_object_or_404(Youtube, pk=question_id)
 
@@ -204,6 +223,7 @@ def automake_modify(request, question_id):
             question.modify_date = timezone.now()  # 수정일시 저장
             question.upload_target = timezone.now()  # 수정일시 저장
             question.save()
+            slack.send_slack('[automake_modify] ' + question.subject + ' ' + str(question.create_date))
             return redirect('pybo:automake_detail', question_id=question.id)
     else:
         form = YoutubeForm(instance=question)
@@ -265,6 +285,7 @@ def automake_youtube_upload_true(question_id):
     print(question.status)
     print(question.create_date)
     question.upload_flag = '1'
+    question.upload_target = timezone.now()
     question.save()
 
 from django.views.decorators.csrf import csrf_exempt
@@ -274,12 +295,21 @@ def automake_youtube_upload_complete(request):
     """
     upload_youtube_sst.py 업로드 완료 후 호출
     """
-    send_slack('[automake_video] 유튜브 썸네일 업로드 시작')
+    slack.send_slack('[automake_video] 유튜브 썸네일 업로드 시작')
     video_id = request.POST.get('video_id', '')
     print(video_id)
 
     filepath = request.POST.get('filepath', '')
     print(filepath)
+
+    f_path = filepath
+    f_path = f_path.replace('./static/output_2/thumb_','')
+    f_path = f_path.replace('.png', '')
+    question_id = f_path
+    question = get_object_or_404(Youtube, pk=question_id)
+    question.video_id = video_id
+    question.save()
+
 
     import subprocess
     # run your program and collect the string output
@@ -293,7 +323,7 @@ def automake_youtube_upload_complete(request):
     out_str = subprocess.check_output(cmd, shell=True)
     print(out_str)
 
-    send_slack('[automake_video] 유튜브 썸네일 업로드 완료')
+    slack.send_slack('[automake_video] 유튜브 썸네일 업로드 완료')
     context = {'status': 'success', 'video-id': video_id}
     return HttpResponse(json.dumps(context), content_type="application/json")
 
@@ -302,7 +332,7 @@ def automake_create_thumbnail(request):
     """
     썸네일 만들기
     """
-    #send_slack('[automake_create_thumbnail] 유튜브 썸네일 업로드 시작')
+    #slack.send_slack('[automake_create_thumbnail] 유튜브 썸네일 업로드 시작')
     question_id = request.POST.get('qid', '')
     print('question_id', question_id)
 
@@ -358,7 +388,8 @@ def automake_create_thumbnail(request):
         split1 = img_url.split('/')
         url_filename = split1[-1]
         print(url_filename)
-        filename, filename_2 = url_filename.split('.')
+        split2 = url_filename.split('.')
+        filename, filename_2 = split2[-2], split2[-1]
         urllib.request.urlretrieve(img_url, './static/output_2/temp/thumbnail_bg_' + question_id + '.' + filename_2)
         thumb_bg = './static/output_2/temp/thumbnail_bg_' + question_id + '.' + filename_2
     else:
@@ -448,7 +479,7 @@ def automake_create_thumbnail(request):
     target_image.save('.'+thumbnail_url)  # 편집된 이미지를 저장합니다.
 
 
-    #send_slack('[automake_create_thumbnail] 유튜브 썸네일 업로드 완료')
+    #slack.send_slack('[automake_create_thumbnail] 유튜브 썸네일 업로드 완료')
     context = {'status': 'success', 'thumbnail_url': thumbnail_url}
     return HttpResponse(json.dumps(context), content_type="application/json")
 
@@ -498,9 +529,25 @@ def automake_convert(request):
                 continue
 
             charCnt += i.__len__()
-            #print("charCnt : " + str(charCnt))
+            #print("charCnt : " + str(charCnt), i)
 
-            if i.find("\n") > -1:
+            if charCnt > 30:
+                # lineStr += i
+                # #print(lineCnt, lineStr, end="\n")
+                # fw.write(lineStr + "\n")
+                # output2 += i + "\n"
+                # lineStr = ""
+                # lineCnt = lineCnt + 1
+                # charCnt = 0
+                #print(lineCnt, lineStr, i, charCnt)
+                fw.write("\n")
+                output2 += "\n"
+                lineStr += i + " "
+                output2 += i + " "
+                lineCnt = lineCnt + 1
+                charCnt = i.__len__()
+                #print(lineCnt, lineStr, i, charCnt)
+            elif i.find("\n") > -1:
                 lineStr += i
                 fw.write(lineStr)
                 output2 += i
@@ -509,14 +556,6 @@ def automake_convert(request):
                 charCnt = 0
             elif i.find("/") > -1:
                 i = i.replace('/', '')
-                lineStr += i
-                #print(lineCnt, lineStr, end="\n")
-                fw.write(lineStr + "\n")
-                output2 += i + "\n"
-                lineStr = ""
-                lineCnt = lineCnt + 1
-                charCnt = 0
-            elif charCnt > 25:
                 lineStr += i
                 #print(lineCnt, lineStr, end="\n")
                 fw.write(lineStr + "\n")
@@ -536,14 +575,10 @@ def automake_convert(request):
                 lineStr += i + " "
                 output2 += i + " "
 
+
     fw.close()
 
     return HttpResponse(json.dumps(output2), content_type="application/json")
-
-
-def send_slack(text):
-    slack = Slacker('xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0')
-    slack.chat.post_message('#jsw', text)
 
 
 @login_required(login_url='common:login')
@@ -552,7 +587,7 @@ def automake_video(request):
     부채널 자동화
     """
 
-    send_slack('[automake_video] start')
+    slack.send_slack('[automake_video] start')
 
     # request 파라미터
     question_id = request.POST.get('qid', '')
@@ -562,7 +597,7 @@ def automake_video(request):
     automake_modify_download_loading(question_id)
 
 
-    send_slack('[automake_video] ' + question.subject)
+    slack.send_slack('[automake_video] ' + question.subject)
 
     # 기본 변수 초기화
     result_subtitle_line1 = ''
@@ -620,7 +655,7 @@ def automake_video(request):
         sorted_dict[key] = value
 
     # print(sorted_dict)
-    send_slack('[automake_video] 영상 태그, 커스텀 키워드 추출 완료')
+    slack.send_slack('[automake_video] 영상 태그, 커스텀 키워드 추출 완료')
     ############################################################
 
     # 스크립트 라인수 세기
@@ -663,7 +698,7 @@ def automake_video(request):
                 print(encText)
 
                 # Naver 음성 API 사용 (CSS)
-                data = "speaker=njihun&speed=-1&text=" + encText;
+                data = "speaker=nsinu&speed=-2&text=" + encText;
                 response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
                 rescode = response.getcode()
                 if (rescode == 200):
@@ -689,7 +724,7 @@ def automake_video(request):
                     print(encText)
 
                     # Naver 음성 API 사용 (CSS)
-                    data = "speaker=njihun&speed=-1&text=" + encText;
+                    data = "speaker=nsinu&speed=-2&text=" + encText;
                     response = urllib.request.urlopen(request_api, data=data.encode('utf-8'))
                     rescode = response.getcode()
                     if (rescode == 200):
@@ -708,7 +743,7 @@ def automake_video(request):
 
             lineCnt_audio += 1
 
-    send_slack('[automake_video] 음성 다운로드 완료')
+    slack.send_slack('[automake_video] 음성 다운로드 완료')
 
 
     ####################  자막 XML 생성  #####################
@@ -768,7 +803,7 @@ def automake_video(request):
     result_image_logo += str(audio_size_sum) + '</out><file id="file-logo"><name>logo.png</name><pathurl>logo.png</pathurl><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><media><video><samplecharacteristics><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><width>842</width><height>596</height><anamorphic>FALSE</anamorphic><pixelaspectratio>square</pixelaspectratio><fielddominance>none</fielddominance></samplecharacteristics></video></media></file><filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter authoringApp="PremierePro"><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>26</value></parameter><parameter authoringApp="PremierePro"><parameterid>rotation</parameterid><name>Rotation</name><valuemin>-8640</valuemin><valuemax>8640</valuemax><value>0</value></parameter><parameter authoringApp="PremierePro"><parameterid>center</parameterid><name>Center</name><value><horiz>0.961995</horiz><vert>-0.657718</vert></value></parameter><parameter authoringApp="PremierePro"><parameterid>centerOffset</parameterid><name>Anchor Point</name><value><horiz>0</horiz><vert>0</vert></value></parameter><parameter authoringApp="PremierePro"><parameterid>antiflicker</parameterid><name>Anti-flicker Filter</name><valuemin>0.0</valuemin><valuemax>1.0</valuemax><value>0</value></parameter></effect></filter></clipitem><enabled>TRUE</enabled><locked>FALSE</locked></track>'
     shutil.copy(urllib.parse.unquote(baseResourcePath + 'logo.png'), downloadPath)
 
-    send_slack('[automake_video] 자막,배경,로고 작업 완료')
+    slack.send_slack('[automake_video] 자막,배경,로고 작업 완료')
 
     ############# 문장별 키워드 추출 ###############
 
@@ -839,7 +874,7 @@ def automake_video(request):
     # for key, value in noun_adj_list.items():
     #     print(key, value)
 
-    send_slack('[automake_video] 라인별 키워드 추출 완료')
+    slack.send_slack('[automake_video] 라인별 키워드 추출 완료')
 
     # 영상 다운로드 , 영상 xml 만들기 #
     ## 영상 xml 만들기 위함 ##
@@ -924,6 +959,8 @@ def automake_video(request):
             from PIL import Image
             width = 1920
             height = 1080
+            length = 0
+            fps = 0
             try:
                 image1 = Image.open(downloadPath + line_num + '_' + img_num + '.' + filename_2)
                 width, height = image1.size
@@ -933,7 +970,14 @@ def automake_video(request):
                 videoObj = cv2.VideoCapture(downloadPath + line_num + '_' + img_num + '.' + filename_2)
                 width = int(videoObj.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height = int(videoObj.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                length = int(videoObj.get(cv2.CAP_PROP_FRAME_COUNT))
+                fps = videoObj.get(cv2.CAP_PROP_FPS)  # Gets the frames per second
                 print('video size', width, ',', height)
+                print('length : ', length)
+                print('fps : ', fps)
+                print('seconds : ', length / fps)
+
+            video_seconds_length = length / fps * 60
 
             c_width = int(1920 / int(width) * 100)
             c_height = int(1080 / int(height) * 100)
@@ -998,23 +1042,57 @@ def automake_video(request):
                 str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
                 result_video += str6 + start_time + str8 + end_time + str10 + start_time + str12 + end_time + str14 + text + str16
             else:
-                str6 = "<clipitem><name>" + fileId + "</name><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><start>"
-                str8 = "</start><end>"
-                str10 = "</end><in>"
-                str12 = "</in><out>"
-                end_time = str(int(timeCnt) + int(dict_audio_size[line_num]))
-                str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
-                text = pathurl
-                str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
-                str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(
-                    max) + "</value></parameter></effect></filter>"
-                str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
-                str17 = "<transitionitem><start>"
-                str17 += str(end_time)
-                str17 += "</start><end>"
-                str17 += str(int(end_time) + 30)
-                str17 += "</end><alignment>start</alignment><cutPointTicks>0</cutPointTicks><rate><timebase>60</timebase><ntsc>FALSE</ntsc></rate><effect><name>Cross Dissolve</name><effectid>Cross Dissolve</effectid><effectcategory>Dissolve</effectcategory><effecttype>transition</effecttype><mediatype>video</mediatype><wipecode>0</wipecode><wipeaccuracy>100</wipeaccuracy><startratio>0</startratio><endratio>1</endratio><reverse>FALSE</reverse></effect></transitionitem>"
-                result_video += str6 + str(-1) + str8 + str(-1) + str10 + str(0) + str12 + end_time + str14 + text + str16 + str17
+                # 오디오 길이가 더 길때 ( 비디오가 짧을때 )
+                if int(video_seconds_length) < int(dict_audio_size[line_num]):
+                    video_start_time = str(int(timeCnt) + int(video_seconds_length))
+                    end_time = str(int(timeCnt) + int(dict_audio_size[line_num]))
+                    str6 = "<clipitem><name>" + fileId + "</name><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><start>"
+                    str8 = "</start><end>"
+                    str10 = "</end><in>"
+                    str12 = "</in><out>"
+                    str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+                    text = pathurl
+                    str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
+                    str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(
+                        max) + "</value></parameter></effect></filter>"
+                    str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+                    result_video += str6 + str(-1) + str8 + video_start_time + str10 + str(0) + str12 + video_start_time + str14 + text + str16
+                    # 비디오가 부족할때 추가 클립 - start
+                    str6 = "<clipitem><name>" + fileId + "</name><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + video_start_time + "</mediadelay><start>"
+                    str8 = "</start><end>"
+                    str10 = "</end><in>"
+                    str12 = "</in><out>"
+                    str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+                    text = pathurl
+                    str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
+                    str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(
+                        max) + "</value></parameter></effect></filter>"
+                    str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+                    # 비디오가 부족할때 추가 클립 - end
+                    str17 = "<transitionitem><start>"
+                    str17 += str(end_time)
+                    str17 += "</start><end>"
+                    str17 += str(int(end_time) + 30)
+                    str17 += "</end><alignment>start</alignment><cutPointTicks>0</cutPointTicks><rate><timebase>60</timebase><ntsc>FALSE</ntsc></rate><effect><name>Cross Dissolve</name><effectid>Cross Dissolve</effectid><effectcategory>Dissolve</effectcategory><effecttype>transition</effecttype><mediatype>video</mediatype><wipecode>0</wipecode><wipeaccuracy>100</wipeaccuracy><startratio>0</startratio><endratio>1</endratio><reverse>FALSE</reverse></effect></transitionitem>"
+                    result_video += str6 + video_start_time + str8 + str(-1) + str10 + video_start_time + str12 + end_time + str14 + text + str16 + str17
+                else:
+                    str6 = "<clipitem><name>" + fileId + "</name><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><start>"
+                    str8 = "</start><end>"
+                    str10 = "</end><in>"
+                    str12 = "</in><out>"
+                    end_time = str(int(timeCnt) + int(dict_audio_size[line_num]))
+                    str14 = "</out><stillframe>TRUE</stillframe><file id=\"" + fileId + "\"><name>" + fileId + "</name><pathurl>"
+                    text = pathurl
+                    str16 = "</pathurl><duration>2</duration><media><video><duration>2</duration><stillframe>TRUE</stillframe><samplecharacteristics><width>720</width><height>480</height></samplecharacteristics></video></media></file>"
+                    str16 += "<filter><effect><name>Basic Motion</name><effectid>basic</effectid><effectcategory>motion</effectcategory><effecttype>motion</effecttype><mediatype>video</mediatype><pproBypass>false</pproBypass><parameter><parameterid>scale</parameterid><name>Scale</name><valuemin>0</valuemin><valuemax>1000</valuemax><value>" + str(
+                        max) + "</value></parameter></effect></filter>"
+                    str16 += "<sourcetrack><mediatype>video</mediatype><trackindex>1</trackindex></sourcetrack></clipitem>"
+                    str17 = "<transitionitem><start>"
+                    str17 += str(end_time)
+                    str17 += "</start><end>"
+                    str17 += str(int(end_time) + 30)
+                    str17 += "</end><alignment>start</alignment><cutPointTicks>0</cutPointTicks><rate><timebase>60</timebase><ntsc>FALSE</ntsc></rate><effect><name>Cross Dissolve</name><effectid>Cross Dissolve</effectid><effectcategory>Dissolve</effectcategory><effecttype>transition</effecttype><mediatype>video</mediatype><wipecode>0</wipecode><wipeaccuracy>100</wipeaccuracy><startratio>0</startratio><endratio>1</endratio><reverse>FALSE</reverse></effect></transitionitem>"
+                    result_video += str6 + str(-1) + str8 + str(-1) + str10 + str(0) + str12 + end_time + str14 + text + str16 + str17
 
             # str6 = "<clipitem><name>" + fileId + "</name><rate><ntsc>TRUE</ntsc><timebase>60</timebase></rate><mediadelay>" + str(
             #     timeCnt) + "</mediadelay><start>"
@@ -1050,10 +1128,10 @@ def automake_video(request):
             ## end- 반복 ##
             # end - 받은 영상에 맞게 xml 생성 #
 
-    result_audio_bg += '<track><clipitem><name>sabana.mp3</name><enabled>TRUE</enabled><rate><timebase>60</timebase><ntsc>FALSE</ntsc></rate><start>0</start><end>' + str(audio_size_sum)
+    result_audio_bg += '<track><clipitem><name>bg_2.mp3</name><enabled>TRUE</enabled><rate><timebase>60</timebase><ntsc>FALSE</ntsc></rate><start>0</start><end>' + str(audio_size_sum)
     result_audio_bg += '</end><in>0</in><out>' + str(audio_size_sum)
-    result_audio_bg += '</out><file id="file-bgm"><name>sabana.mp3</name><pathurl>sabana.mp3</pathurl><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><media><audio><samplecharacteristics><depth>16</depth><samplerate>48000</samplerate></samplecharacteristics><channelcount>1</channelcount><audiochannel><sourcechannel>1</sourcechannel></audiochannel></audio></media></file><sourcetrack><mediatype>audio</mediatype><trackindex>1</trackindex></sourcetrack><filter><effect><name>Audio Levels</name><effectid>audiolevels</effectid><effectcategory>audiolevels</effectcategory><effecttype>audiolevels</effecttype><mediatype>audio</mediatype><pproBypass>false</pproBypass><parameter authoringApp="PremierePro"><parameterid>level</parameterid><name>Level</name><valuemin>0</valuemin><valuemax>3.98109</valuemax><value>1</value></parameter></effect></filter></clipitem><enabled>TRUE</enabled><locked>FALSE</locked><outputchannelindex>1</outputchannelindex></track>'
-    shutil.copy(urllib.parse.unquote(baseResourcePath + 'sabana.mp3'), downloadPath)
+    result_audio_bg += '</out><file id="file-bgm"><name>bg_2.mp3</name><pathurl>bg_2.mp3</pathurl><rate><timebase>30</timebase><ntsc>TRUE</ntsc></rate><media><audio><samplecharacteristics><depth>16</depth><samplerate>48000</samplerate></samplecharacteristics><channelcount>1</channelcount><audiochannel><sourcechannel>1</sourcechannel></audiochannel></audio></media></file><sourcetrack><mediatype>audio</mediatype><trackindex>1</trackindex></sourcetrack><filter><effect><name>Audio Levels</name><effectid>audiolevels</effectid><effectcategory>audiolevels</effectcategory><effecttype>audiolevels</effecttype><mediatype>audio</mediatype><pproBypass>false</pproBypass><parameter authoringApp="PremierePro"><parameterid>level</parameterid><name>Level</name><valuemin>0</valuemin><valuemax>3.98109</valuemax><value>1</value></parameter></effect></filter></clipitem><enabled>TRUE</enabled><locked>FALSE</locked><outputchannelindex>1</outputchannelindex></track>'
+    shutil.copy(urllib.parse.unquote(baseResourcePath + 'bg_2.mp3'), downloadPath)
 
     ## 영상 xml 만들기 ##
 
@@ -1075,6 +1153,7 @@ def automake_video(request):
     result += "<track>"
     result += result_audio_voice
     result += "<enabled>TRUE</enabled><locked>FALSE</locked><outputchannelindex>1</outputchannelindex></track>"
+    result += result_audio_bg
     result += "</audio>"
     # 오디오 끝
 
@@ -1083,7 +1162,7 @@ def automake_video(request):
     writexml.write(result)
     writexml.close()
 
-    send_slack('[automake_video] 영상 다운로드 완료')
+    slack.send_slack('[automake_video] 영상 추출 완료')
 
     """
     파일 다운로드 받기 
@@ -1101,18 +1180,18 @@ def automake_video(request):
             #print(list)
             new_zip.write(downloadPath + list, arcname=list)
 
-    send_slack('[automake_video] zip 파일 생성 완료')
+    slack.send_slack('[automake_video] zip 파일 생성 완료')
     automake_modify_download_true(question_id)
 
 
     # 프리미어프로 -> 영상 인코딩하기
-    send_slack('[automake_video] 비디오 인코딩 시작')
+    slack.send_slack('[automake_video] 비디오 인코딩 시작')
     run_video_encoding(question_id)
-    send_slack('[automake_video] 비디오 인코딩 완료')
+    slack.send_slack('[automake_video] 비디오 인코딩 완료')
 
     filepath = './static/output_2/video_layer_' + question_id + '.mp4'
 
-    send_slack('[automake_video] 유튜브 동영상 업로드 시작')
+    slack.send_slack('[automake_video] 유튜브 동영상 업로드 시작')
     import subprocess
     # run your program and collect the string output
     cmd = [
@@ -1120,20 +1199,17 @@ def automake_video(request):
         'upload_video_sst.py',
         "--file=" + filepath,
         "--title=" + question.subject,
-        "--description=시사통입니다.",
-        "--keywords=뉴스,한국,중국,일본,미국,잡식,문재인,아베,스가,시진핑,바이든",
+        "--description=안녕하세요. 여러분들이 꼭 알아야하는 뉴스만 제대로 전해드리는 시사통 입니다.",
+        "--keywords=지식,뉴스,한국,중국,일본,미국,문재인,아베,스가,시진핑,바이든,쓸모왕,Travel Tube,퍼플튜브,깡통튜브,잡식왕",
         "--category=25",
         "--privacyStatus=private"
     ]
-    # out_str = subprocess.Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
-    #                            creationflags=subprocess.DETACHED_PROCESS)
-
-    out_str = subprocess.check_output(cmd, shell=True)
-
-
+    out_str = subprocess.Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
+                               creationflags=subprocess.DETACHED_PROCESS)
+    #out_str = subprocess.check_output(cmd, shell=True)
 
     print(out_str)
-    send_slack('[automake_video] 유튜브 동영상 업로드 완료')
+    slack.send_slack('[automake_video] 유튜브 동영상 업로드 완료')
 
     automake_youtube_upload_true(question_id)
 
@@ -1156,7 +1232,7 @@ def run_video_encoding(qid):
 
 
     time.sleep(30)
-    send_slack('[automake_video] 프리미어프로 실행')
+    slack.send_slack('[automake_video] 프리미어프로 실행')
     pyautogui.hotkey('ctrl', 'i')
 
     time.sleep(5)
@@ -1199,7 +1275,7 @@ def run_video_encoding(qid):
     time.sleep(1)
     pyautogui.press('enter')
     time.sleep(120)
-    send_slack('[automake_video] 완료 xml 불러오기')
+    slack.send_slack('[automake_video] 완료 xml 불러오기')
     pyautogui.moveTo(106, 828, 1)
     pyautogui.click()
     time.sleep(1)
@@ -1213,7 +1289,7 @@ def run_video_encoding(qid):
 
     pyautogui.hotkey('ctrl', 'm')
     time.sleep(10)
-    send_slack('[automake_video] 인코딩 시작')
+
     pyautogui.press('tab')
     time.sleep(1)
     pyautogui.press('tab')
@@ -1303,7 +1379,7 @@ def run_video_encoding(qid):
 
     pyautogui.press('space')
     time.sleep(360)
-    send_slack('[automake_video] 인코딩 완료')
+
     pyautogui.moveTo(2533, 9, 1)
     pyautogui.click()
     time.sleep(1)
@@ -1331,58 +1407,3 @@ def random_pop(data):
         return number
     else:
         return None
-
-
-
-KAKAO_TOKEN = "9cFyITmgIVxuqTCU4ltvJQqTU4XXEs_uTbAVbgopyV4AAAF1iZM_OQ"
-def send_to_kakao(text):
-    header = {"Authorization": 'Bearer ' + KAKAO_TOKEN}
-    url = "https://kapi.kakao.com/v2/api/talk/memo/default/send"
-    post = {
-        "object_type": "text",
-        "text": text,
-        "link": {
-            "web_url": "https://developers.kakao.com",
-            "mobile_web_url": "https://developers.kakao.com"
-        },
-    }
-
-    data = {"template_object": json.dumps(post)}
-    print(data)
-    return requests.post(url, headers=header, data=data)
-
-
-def send_to_kakao_for_friend(text):
-    header = {
-        "Authorization": 'Bearer ' + KAKAO_TOKEN
-    }
-    url = "https://kapi.kakao.com/v1/api/talk/friends/message/default/send"
-    post = {
-        "object_type": "feed",
-        "content": {
-            "title": "디저트 사진",
-            "description": "아메리카노, 빵, 케익",
-            "image_url": "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
-            "image_width": 640,
-            "image_height": 640,
-            "link": {
-            "web_url": "http://www.daum.net",
-            "mobile_web_url": "http://m.daum.net",
-            "android_execution_params": "contentId=100",
-            "ios_execution_params": "contentId=100"
-            }
-        },
-    }
-
-    data = {"template_object": json.dumps(post), "receiver_uuids":  "[\"y_PK8sr-zPzQ49Lk0Ojc6Nn1wfjB9sf_jQ\"]"}
-    return requests.post(url, headers=header, data=data)
-
-
-def get_kakao_friend():
-    header = {
-        "Authorization": 'Bearer ' + KAKAO_TOKEN
-    }
-
-    url = "https://kapi.kakao.com/v1/api/talk/friends?friend_order=favorite&limit=100&order=asc"
-
-    return requests.get(url, headers=header)

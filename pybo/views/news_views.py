@@ -27,7 +27,6 @@ def news_list(request):
                 tag_list.append(tag)
 
     tag_list.sort()
-    print(tag_list)
 
     context = {'tag_list': tag_list}
     return render(request, 'pybo/news_list.html', context)

@@ -41,8 +41,8 @@
                 {% endif %}
             </td>-->
             <td class="text-left">
-                {% if question.status == '완료' %}
-                <span>[{{ question.status|default_if_none:'' }}]</span>
+                {% if question.upload_flag == '1' %}
+                <span>[완료]</span>
                 {% elif question.status is none %}
                 <span style="color:blue;font-weight: bold;"></span>
                 {% elif question.status == '영상' %}
@@ -62,16 +62,21 @@
             </td>
             <td>{{ question.author.username }}</td>  <!-- 글쓴이 추가 -->
             {% if question.upload_target|date:"y/m/d"|default_if_none:'' == today|date:"y/m/d"|default_if_none:'' or question.upload_target|date:"y/m/d"|default_if_none:'' == tomorrow|date:"y/m/d"|default_if_none:'' %}
-            <td style="color:red;">{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
+                {% if question.upload_flag == '1' %}
+                <td>{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
+                {% else %}
+                <td style="color:red;">{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
+                {% endif %}
             {% else %}
-            <td>{{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
+            <td>
+            {{ question.upload_target|date:"y/m/d"|default_if_none:'' }}
             {% endif %}
-            {% if question.upload_flag == '1' %}
-            <img src="/static/img/check.svg" style="width:15px;padding-bottom:4px">
-            {% else %}
             <a href="#" data-toggle="modal" data-target="#exampleModal" class="btn_upload" id="upload_{{question.id}}"><img src="/static/img/btn_upload.png" style="width:15px;padding-bottom:4px"></a>
+            {% if question.upload_flag == '1' %}
+                <img src="/static/img/check.png" style="width:15px;padding-bottom:4px">
             {% endif %}
             </td>
+
 
 
             <!--{% if question.modify_date is null %}

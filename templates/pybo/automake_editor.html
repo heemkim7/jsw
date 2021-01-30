@@ -69,7 +69,7 @@
                                   id="thumbnail_text" rows="4" placeholder="썸네일 텍스트를 입력하세요.">{{ thumbnail_text|default_if_none:'' }}</textarea>
                         </div>
                     <div class="col-md-6" id="thumb_img">
-                        <img src="/static/img/thumb_wh.png" style="height:110px;">
+                        <img src="{{ thumbnail_url|default_if_none:'/static/img/thumb_wh.png' }}" style="height:110px;">
                     </div>
                 </div>
                 <div class="form-group">
@@ -79,6 +79,8 @@
                 </div>
                 <input type="hidden" value="{{ qid|default_if_none:'' }}" id="qid">
                 <input type="hidden" value="" id="subtitle_cnt">
+                <input type="hidden" value="{{ video_id|default_if_none:'' }}" id="video_id">
+
                 <!--<input type="button" id="cur" value="커서">-->
             </form>
         </div>

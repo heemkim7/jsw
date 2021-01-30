@@ -1,6 +1,7 @@
 
 from PIL import Image, ImageDraw, ImageFont
 import os
+from pybo.views import kakao
 
 def getSize(txt, font):
     """
@@ -12,6 +13,13 @@ def getSize(txt, font):
 
 
 if __name__ == '__main__':
+
+    print(kakao.send_to_kakao("hi"))
+    #print(get_kakao_profile())
+    #print(send_to_kakao_for_friend("hi"))
+    #print(get_kakao_friend())
+
+
     ####### 썸네일 자동생성 #########
     keyword1 = '전세계 백신부족사태 결국'
     keyword2 = '한국에서 해결해 버렸다'
@@ -47,71 +55,6 @@ if __name__ == '__main__':
     width_start2 = (1280 - width2) / 2
     width_start3 = (1280 - width3) / 2
     width_start4 = (1280 - width4) / 2
-
-
-    # if width1 > width2:
-    #     draw.rectangle((width_start + 20, height_start1 + 10, width1 + 30, height_start1 + 100), fill="black")
-    #     draw.rectangle((width_start + 20, height_start2 - 40, width2 + 30, height_start2 + 100), fill="black")
-    # else:
-    #     draw.rectangle((width_start + 20, height_start1 + 10, width1 + 30, height_start1 + 150), fill="black")
-    #     draw.rectangle((width_start + 20, height_start2 + 10, width2 + 30, height_start2 + 100), fill="black")
-    #
-    # if width3 > width4:
-    #     draw.rectangle((width_start + 20, height_start3 + 10, width3 + 30, height_start3 + 100), fill="black")
-    #     draw.rectangle((width_start + 20, height_start4 - 40, width4 + 30, height_start4 + 100), fill="black")
-    # else:
-    #     draw.rectangle((width_start + 20, height_start3 + 10, width3 + 30, height_start3 + 150), fill="black")
-    #     draw.rectangle((width_start + 20, height_start4 + 10, width4 + 30, height_start4 + 100), fill="black")
-    #
-    #
-    #
-    #
-    # draw.text((width_start-5, height_start1-5), keyword1, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start-5, height_start2-5), keyword2, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start-5, height_start3-5), keyword3, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start-5, height_start4-5), keyword4, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    #
-    # draw.text((width_start+5, height_start1-5), keyword1, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start+5, height_start2-5), keyword2, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start+5, height_start3-5), keyword3, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start+5, height_start4-5), keyword4, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    #
-    # draw.text((width_start-5, height_start1+5), keyword1, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start-5, height_start2+5), keyword2, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start-5, height_start3+5), keyword3, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start-5, height_start4+5), keyword4, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    #
-    # draw.text((width_start+5, height_start1+5), keyword1, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start+5, height_start2+5), keyword2, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start+5, height_start3+5), keyword3, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start+5, height_start4+5), keyword4, fill="black", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    #
-    #
-    # draw.text((width_start, height_start1), keyword1, fill="yellow", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start, height_start2), keyword2, fill="yellow", font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start, height_start3), keyword3, fill=(255,255,255), font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-    # draw.text((width_start, height_start4), keyword4, fill=(255,255,255), font=selectedFont,
-    #           align='center')  # fill= 속성은 무슨 색으로 채울지 설정,font=는 자신이 설정한 폰트 설정
-
 
     if width1 > width2:
         draw.rectangle((width_start1 + 20, height_start1 + 10, width_start1 + width1 - 10, height_start1 + 100), fill="black")
@@ -222,13 +165,15 @@ if __name__ == '__main__':
     #         f.write(response_body)
     # else:
     #     print("Error Code:" + rescode)
-
+    #
     # from slacker import Slacker
-    # slack = Slacker('xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0')
+    # slack = Slacker('xoxb-1615709181554-1615920445683-z2ER8SCXxSwk6ZnNIAwZeker')
+    # #xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0
+    # #xoxb-1615709181554-1615920445683-z2ER8SCXxSwk6ZnNIAwZeker
     # slack.chat.post_message('#jsw', "test")
 
 
-    filepath = './youtube/test.mp4'
+    #filepath = './youtube/test.mp4'
     #
     # import subprocess
     # cmd = [
@@ -245,21 +190,56 @@ if __name__ == '__main__':
     #                            creationflags=subprocess.DETACHED_PROCESS)
     # print(out_str)
 
-    filepath = './youtube/2/intro.mp4'
-    import subprocess
-    # run your program and collect the string output
-    cmd = [
-        'python',
-        'upload_video_sst.py',
-        "--file=" + filepath,
-        "--title=" + "test3",
-        "--description=시사통입니다.",
-        "--keywords=뉴스,한국,중국,일본,미국,잡식,문재인,아베,스가,시진핑,바이든",
-        "--category=25",
-        "--privacyStatus=private"
-    ]
-    # out_str = subprocess.Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
-    #                            creationflags=subprocess.DETACHED_PROCESS)
+    # filepath = './youtube/2/intro.mp4'
+    # import subprocess
+    # # run your program and collect the string output
+    # cmd = [
+    #     'python',
+    #     'upload_video_sst.py',
+    #     "--file=" + filepath,
+    #     "--title=" + "test3",
+    #     "--description=시사통입니다.",
+    #     "--keywords=뉴스,한국,중국,일본,미국,잡식,문재인,아베,스가,시진핑,바이든",
+    #     "--category=25",
+    #     "--privacyStatus=private"
+    # ]
+    # # out_str = subprocess.Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
+    # #                            creationflags=subprocess.DETACHED_PROCESS)
+    #
+    # out_str = subprocess.check_output(cmd, shell=True)
+    # print(out_str)
 
-    out_str = subprocess.check_output(cmd, shell=True)
-    print(out_str)
+    # video2.py
+    import cv2
+
+    # cap = cv2.VideoCapture('./youtube/test.mp4')
+    #
+    # # 재생할 파일의 넓이와 높이
+    # # width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    # # height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    # width = 640
+    # height = 360
+    #
+    # print("재생할 파일 넓이, 높이 : %d, %d" % (width, height))
+    #
+    # fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    # out = cv2.VideoWriter('./youtube/output_3.mp4', fourcc, 30.0, (int(width), int(height)))
+    #
+    # while (cap.isOpened()):
+    #     ret, frame = cap.read()
+    #
+    #     if ret == False:
+    #         break;
+    #
+    #     frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_AREA)
+    #     #cv2.imshow('frame', frame)
+    #     out.write(frame)
+    #
+    #     if cv2.waitKey(1) & 0xFF == ord('q'):
+    #         break
+    #
+    #
+    # cap.release()
+    # out.release()
+    # cv2.destroyAllWindows()
+

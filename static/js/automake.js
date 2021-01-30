@@ -312,9 +312,12 @@ $(document).ready(function() {
         var text = $('textarea#content').val();
         var category = $("select[name=category]").val();
         var thumbnail_text = $('textarea#thumbnail_text').val();
+        var video_id = $('#video_id').val();
 
-
-        if(subject == "" || subject == null || subject == "undefined"){
+        if(video_id != "" && video_id && null || video_id && "undefined"){
+            alert("이미 업로드된 영상입니다")
+        }
+        else if(subject == "" || subject == null || subject == "undefined"){
             alert("제목은 필수항목입니다");
             $('#subject').focus();
         }
@@ -357,6 +360,9 @@ $(document).ready(function() {
         var text = $('textarea#content').val();
         var qid = $('#qid').val();
         var category = $("select[name=category]").val();
+        var thumbnail_text = $('textarea#thumbnail_text').val();
+        var thumbnail_bg = $('#thumbnail_bg').val();
+
 
         if(text == "" || text == null || text == "undefined"){
             alert("내용은 필수항목입니다");
@@ -373,7 +379,9 @@ $(document).ready(function() {
                     subject : subject,
                     content : text,
                     qid : qid,
-                    category : category
+                    category : category,
+                    thumbnail_text : thumbnail_text,
+                    thumbnail_bg : thumbnail_bg
                 },
                 success: function(data,status){ //status는 생략해도 됨
                     $('.alert').css('display','');
