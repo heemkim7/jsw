@@ -6,7 +6,7 @@ from datetime import timedelta
 from datetime import datetime
 from ..forms import QuestionForm
 from ..models import Question
-from ..views import slack
+from ..api import slack
 
 @login_required(login_url='common:login')
 def question_create(request):

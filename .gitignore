@@ -2,7 +2,7 @@
 *.pyc
 __pycache__
 logs
-pybo/3rd
+pybo/api
 static/keyword
 static/output
 static/keyword_2

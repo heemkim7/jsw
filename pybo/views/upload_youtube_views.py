@@ -4,7 +4,7 @@ from datetime import datetime
 from django.http import HttpResponse
 import json
 from ..models import Question
-from ..views import slack
+from ..api import slack
 
 @login_required(login_url='common:login')
 def upload_youtube(request):

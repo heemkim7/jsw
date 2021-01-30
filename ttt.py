@@ -164,12 +164,6 @@ if __name__ == '__main__':
     #         f.write(response_body)
     # else:
     #     print("Error Code:" + rescode)
-    #
-    # from slacker import Slacker
-    # slack = Slacker('xoxb-1615709181554-1615920445683-z2ER8SCXxSwk6ZnNIAwZeker')
-    # #xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0
-    # #xoxb-1615709181554-1615920445683-z2ER8SCXxSwk6ZnNIAwZeker
-    # slack.chat.post_message('#jsw', "test")
 
 
     #filepath = './youtube/test.mp4'

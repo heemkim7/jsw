@@ -20,7 +20,7 @@ from datetime import timedelta
 
 from ..forms import YoutubeForm
 from ..models import Youtube
-from ..views import slack
+from ..api import slack
 
 
 @login_required(login_url='common:login')

@@ -7,7 +7,6 @@ import bs4.element
 from datetime import datetime
 import time
 from gensim.summarization.summarizer import summarize
-from slacker import Slacker
 from urllib.parse import quote_plus
 import json
 import os
@@ -21,6 +20,8 @@ import random
 import sys
 import time
 import subprocess
+
+from ..api import slack
 
 
 @login_required(login_url='common:login')
@@ -72,7 +73,6 @@ def test(request):
 
     # 3번에 걸쳐 각 뉴스의 요약 결과를 전송합니다
     for idx, news_info in enumerate(news_list10):
-        slack = Slacker('xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0')
         slack.chat.post_message('#jsw', '['+str(news_info.get('title_ko'))+']'+'\n'+str(news_info.get('desc_ko'))+'\n'+str(news_info.get('url')))
 
 
@@ -275,176 +275,6 @@ def test2(request):
 
     context = {'tag_list': tag_list}
     return render(request, 'pybo/upload_keyword_list.html', context)
-
-
-def run_video_encoding():
-    import pyautogui
-
-    pyautogui.position()
-    # 사용 예시
-    x, y = pyautogui.position()
-    print("x={0},y={1}".format(x, y))
-
-    pyautogui.hotkey('win', 'd')
-    pyautogui.moveTo(2511, 36, 1)
-    pyautogui.click(clicks=2)
-
-
-    time.sleep(15)
-
-    pyautogui.hotkey('ctrl', 'i')
-
-    time.sleep(5)
-
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-
-    pyautogui.press('enter')
-    time.sleep(1)
-    pyautogui.typewrite('C:/projects/djangobook-master/static/keyword/162 ')
-    time.sleep(1)
-
-    pyautogui.press('enter')
-
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-
-    pyautogui.press('pagedown')
-    pyautogui.press('pagedown')
-    pyautogui.press('pagedown')
-    pyautogui.press('pagedown')
-    pyautogui.press('pagedown')
-    pyautogui.press('pagedown')
-    pyautogui.press('pagedown')
-
-    time.sleep(1)
-    pyautogui.press('enter')
-    time.sleep(60)
-
-    pyautogui.moveTo(106, 828, 1)
-    pyautogui.click()
-    time.sleep(1)
-
-    pyautogui.typewrite('video_layer')
-    time.sleep(1)
-
-    pyautogui.moveTo(115, 902, 1)
-    pyautogui.click(clicks=2)
-    time.sleep(5)
-
-    pyautogui.hotkey('ctrl', 'm')
-    time.sleep(5)
-
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-
-    pyautogui.press('space')
-    time.sleep(5)
-
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-
-    pyautogui.press('enter')
-    time.sleep(5)
-
-    pyautogui.typewrite('C:/projects/djangobook-master/static/keyword/162')
-    time.sleep(1)
-
-    pyautogui.press('enter')
-    time.sleep(5)
-    pyautogui.hotkey('alt', 's')
-    time.sleep(5)
-
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-    pyautogui.press('tab')
-    time.sleep(1)
-
-    pyautogui.press('space')
-    time.sleep(300)
-
-    pyautogui.moveTo(2533, 9, 1)
-    pyautogui.click()
-    time.sleep(1)
-    pyautogui.moveTo(1323, 726, 1)
-    pyautogui.click()
-    time.sleep(5)
 
 
 def getSize(txt, font):
@@ -708,13 +538,11 @@ def test_run():
 
         for link in new_links:
             print(link)
-            slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
             slack.chat.post_message('#jsw', link)
 
         # 3번에 걸쳐 각 뉴스의 요약 결과를 전송합니다
         #for idx, news_info in enumerate(news_list3):
             #print('['+news_info.get('title')+']'+'\n'+news_info.get('snews_contents'))
-            #slack = Slacker('xoxb-1615709181554-1615920445683-0Jq0kIhfrquKmSz6izJ4okgj')
             #slack.chat.post_message('#jsw', '['+news_info.get('title')+']'+'\n'+news_info.get('snews_contents'))
 
         time.sleep(10)
@@ -774,7 +602,6 @@ def test_run_google():
 
         # 3번에 걸쳐 각 뉴스의 요약 결과를 전송합니다
         for idx, news_info in enumerate(news_list10):
-            slack = Slacker('xoxb-1615709181554-1615920445683-4jYsPvJKhjfppAdWAJB1Qwq0')
             slack.chat.post_message('#jsw', '[' + str(news_info.get('title')) + ']' + '\n' + str(news_info.get('url')))
 
         time.sleep(60)
