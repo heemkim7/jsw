@@ -1,6 +1,7 @@
 from slacker import Slacker
 
-slack = Slacker('xoxb-1615709181554-1615920445683-z2ER8SCXxSwk6ZnNIAwZeker')
+slack = Slacker('')
+
 def send_slack(text):
     try:
         slack.chat.post_message('#jsw', text)
