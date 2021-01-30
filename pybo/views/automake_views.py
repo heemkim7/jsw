@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.db.models import Q
-import requests
 import json
 import datetime
 
@@ -14,20 +13,14 @@ import os
 import zipfile
 import shutil
 import random
-from bs4 import BeautifulSoup as bs
 from urllib import parse
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
-from urllib.parse import quote_plus
+from urllib.request import Request
 from PIL import Image, ImageDraw, ImageFont
-from threading import Thread
 from datetime import timedelta
 
 from ..forms import YoutubeForm
 from ..models import Youtube
 from ..views import slack
-from ..views import kakao
-
 
 
 @login_required(login_url='common:login')

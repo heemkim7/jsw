@@ -128,10 +128,9 @@ if __name__ == '__main__':
 
 
     # audio_voice API 호출해 다운로드 받아서 각 mp3 시간 구하기
-    from mutagen.mp3 import MP3
 
     from urllib import parse
-    from urllib.request import Request, urlopen
+    from urllib.request import Request
     import urllib
 
     # ccs 키
@@ -210,7 +209,6 @@ if __name__ == '__main__':
     # print(out_str)
 
     # video2.py
-    import cv2
 
     # cap = cv2.VideoCapture('./youtube/test.mp4')
     #
