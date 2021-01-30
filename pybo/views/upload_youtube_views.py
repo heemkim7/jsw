@@ -25,7 +25,7 @@ def upload_youtube(request):
             # # run your program and collect the string output
             # cmd = [
             #     'python',
-            #     'upload_video_jsw.py',
+            #     './youtube/1/upload_video_jsw.py',
             #     "--file=."+filepath,
             #     "--title="+question.subject,
             #     "--description=본 채널은 연합뉴스 콘텐츠 이용계약을 맺었으며, 연합뉴스는 본 채널의 편집방향과 무관합니다.저작권자(C)연합뉴스, 잡식왕",

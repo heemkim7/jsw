@@ -239,7 +239,7 @@ def test2(request):
     #run_video_encoding()
 
     # run your program and collect the string output
-    cmd = "python upload_video.py --file=\"./youtube/test.mp4\" --title=\"업로드 테스트 타이틀2\" --description=\"디스크립션2\""
+    cmd = "python ./youtube/3/upload_video.py --file=\"./youtube/test.mp4\" --title=\"업로드 테스트 타이틀2\" --description=\"디스크립션2\""
     cmd += " --keywords=\"뉴스,지식,한국,중국,일본,미국,아베,스가,시진핑,바이든,문재인\" --category=\"25\" --privacyStatus=\"private\""
     cmd += " --thumbnail=\""+ "./youtube/test.jpg" + "\""
     #out_str = subprocess.check_output(cmd, shell=True)

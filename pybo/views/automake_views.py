@@ -309,7 +309,7 @@ def automake_youtube_upload_complete(request):
 
     cmd = [
         'python',
-        'upload_thumbnail.py',
+        './youtube/2/upload_thumbnail.py',
         "--file=" + filepath,
         "--video-id=" + video_id
     ]
@@ -1189,7 +1189,7 @@ def automake_video(request):
     # run your program and collect the string output
     cmd = [
         'python',
-        'upload_video_sst.py',
+        './youtube/2/upload_video_sst.py',
         "--file=" + filepath,
         "--title=" + question.subject,
         "--description=안녕하세요. 여러분들이 꼭 알아야하는 뉴스만 제대로 전해드리는 시사통 입니다.",
